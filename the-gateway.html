@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Gateway | Strategic Advisory for Indonesia Market Entry & Logistics Growth</title>
+  <meta name="description" content="The Gateway provides expert advisory to investors developing and expanding business in Indonesia, specializing in ports, logistics, transportation, regulatory compliance, and digital infrastructure.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #0A1F3D;
+      --navy-light: #132A4A;
+      --teal: #0D9488;
+      --teal-dark: #0F766E;
+      --teal-light: #14B8A6;
+      --accent: #F59E0B;
+      --white: #FFFFFF;
+      --off-white: #F8FAFC;
+      --gray-100: #F1F5F9;
+      --gray-200: #E2E8F0;
+      --gray-500: #64748B;
+      --gray-700: #334155;
+      --gray-900: #0F172A;
+      --shadow: 0 10px 40px -10px rgba(10, 31, 61, 0.15);
+      --shadow-lg: 0 25px 50px -12px rgba(10, 31, 61, 0.25);
+      --radius: 12px;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--gray-900);
+      line-height: 1.6;
+      background: var(--white);
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--navy);
+    }
+
+    .serif {
+      font-family: 'Playfair Display', serif;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+      transition: var(--transition);
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ========== NAVIGATION ========== */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: rgba(10, 31, 61, 0.95);
+      backdrop-filter: blur(12px);
+      transition: var(--transition);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .navbar.scrolled {
+      background: rgba(10, 31, 61, 0.98);
+      box-shadow: 0 4px 30px rgba(0,0,0,0.2);
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 72px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--white);
+      font-weight: 700;
+      font-size: 1.35rem;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--teal), var(--teal-light));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 36px;
+    }
+
+    .nav-links a {
+      color: rgba(255,255,255,0.85);
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+    .nav-links a:hover {
+      color: var(--teal-light);
+    }
+
+    .nav-cta {
+      background: var(--teal);
+      color: white !important;
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .nav-cta:hover {
+      background: var(--teal-dark);
+      transform: translateY(-1px);
+    }
+
+    .mobile-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    /* ========== HERO ========== */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      background: var(--navy);
+      overflow: hidden;
+      padding-top: 72px;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background: 
+        linear-gradient(135deg, rgba(10, 31, 61, 0.92) 0%, rgba(10, 31, 61, 0.75) 50%, rgba(13, 148, 136, 0.4) 100%),
+        url('https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=2000&q=80') center/cover no-repeat;
+      z-index: 0;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+      padding: 80px 0 100px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(13, 148, 136, 0.2);
+      border: 1px solid rgba(13, 148, 136, 0.4);
+      color: var(--teal-light);
+      padding: 8px 16px;
+      border-radius: 100px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 28px;
+      letter-spacing: 0.02em;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 5.5vw, 3.75rem);
+      color: white;
+      margin-bottom: 24px;
+      letter-spacing: -0.03em;
+      font-weight: 800;
+    }
+
+    .hero h1 span {
+      color: var(--teal-light);
+    }
+
+    .hero-lead {
+      font-size: 1.25rem;
+      color: rgba(255,255,255,0.85);
+      margin-bottom: 40px;
+      max-width: 560px;
+      font-weight: 400;
+      line-height: 1.7;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 28px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: var(--transition);
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--teal);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--teal-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(13, 148, 136, 0.4);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: white;
+      border: 2px solid rgba(255,255,255,0.3);
+    }
+
+    .btn-secondary:hover {
+      border-color: white;
+      background: rgba(255,255,255,0.08);
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 48px;
+      margin-top: 64px;
+      padding-top: 40px;
+      border-top: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .stat-item h3 {
+      font-size: 2rem;
+      color: white;
+      margin-bottom: 4px;
+    }
+
+    .stat-item p {
+      color: rgba(255,255,255,0.7);
+      font-size: 0.9rem;
+    }
+
+    /* ========== SECTION COMMON ========== */
+    section {
+      padding: 100px 0;
+    }
+
+    .section-header {
+      max-width: 640px;
+      margin-bottom: 64px;
+    }
+
+    .section-label {
+      display: inline-block;
+      color: var(--teal);
+      font-weight: 600;
+      font-size: 0.875rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .section-header h2 {
+      font-size: clamp(2rem, 4vw, 2.75rem);
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .section-header p {
+      color: var(--gray-500);
+      font-size: 1.125rem;
+      line-height: 1.7;
+    }
+
+    /* ========== ABOUT ========== */
+    .about {
+      background: var(--off-white);
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+    }
+
+    .about-image {
+      position: relative;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      aspect-ratio: 4/3;
+    }
+
+    .about-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .about-image::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(10,31,61,0.3), transparent);
+    }
+
+    .about-content h2 {
+      font-size: 2.25rem;
+      margin-bottom: 20px;
+    }
+
+    .about-content p {
+      color: var(--gray-700);
+      margin-bottom: 20px;
+      font-size: 1.05rem;
+    }
+
+    .about-highlights {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 32px;
+    }
+
+    .highlight-card {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      border: 1px solid var(--gray-200);
+    }
+
+    .highlight-card strong {
+      display: block;
+      color: var(--navy);
+      margin-bottom: 4px;
+      font-size: 0.95rem;
+    }
+
+    .highlight-card span {
+      color: var(--gray-500);
+      font-size: 0.875rem;
+    }
+
+    /* ========== SERVICES ========== */
+    .services {
+      background: white;
+    }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+    }
+
+    .service-card {
+      background: var(--off-white);
+      border-radius: var(--radius);
+      padding: 36px 28px;
+      border: 1px solid transparent;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .service-card:hover {
+      border-color: var(--teal);
+      transform: translateY(-6px);
+      box-shadow: var(--shadow);
+      background: white;
+    }
+
+    .service-icon {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, var(--teal), var(--teal-light));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      font-size: 1.5rem;
+      color: white;
+    }
+
+    .service-card h3 {
+      font-size: 1.25rem;
+      margin-bottom: 12px;
+      color: var(--navy);
+    }
+
+    .service-card p {
+      color: var(--gray-500);
+      font-size: 0.95rem;
+      line-height: 1.65;
+      margin-bottom: 16px;
+    }
+
+    .service-card ul {
+      list-style: none;
+      margin-top: 16px;
+    }
+
+    .service-card ul li {
+      position: relative;
+      padding-left: 18px;
+      color: var(--gray-700);
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+
+    .service-card ul li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 6px;
+      height: 6px;
+      background: var(--teal);
+      border-radius: 50%;
+    }
+
+    /* ========== WHY INDONESIA ========== */
+    .why-indonesia {
+      background: var(--navy);
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .why-indonesia .section-label {
+      color: var(--teal-light);
+    }
+
+    .why-indonesia h2 {
+      color: white;
+    }
+
+    .why-indonesia .section-header p {
+      color: rgba(255,255,255,0.7);
+    }
+
+    .why-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+    }
+
+    .why-card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius);
+      padding: 32px 24px;
+      transition: var(--transition);
+    }
+
+    .why-card:hover {
+      background: rgba(13, 148, 136, 0.15);
+      border-color: var(--teal);
+    }
+
+    .why-card .number {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--teal-light);
+      margin-bottom: 12px;
+      line-height: 1;
+    }
+
+    .why-card h3 {
+      color: white;
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+
+    .why-card p {
+      color: rgba(255,255,255,0.7);
+      font-size: 0.9rem;
+    }
+
+    /* ========== APPROACH ========== */
+    .approach {
+      background: var(--off-white);
+    }
+
+    .process-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      position: relative;
+    }
+
+    .process-steps::before {
+      content: '';
+      position: absolute;
+      top: 40px;
+      left: 10%;
+      right: 10%;
+      height: 2px;
+      background: linear-gradient(to right, var(--teal), var(--teal-light));
+      z-index: 0;
+      opacity: 0.3;
+    }
+
+    .step {
+      background: white;
+      border-radius: var(--radius);
+      padding: 32px 24px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+      border: 1px solid var(--gray-200);
+      transition: var(--transition);
+    }
+
+    .step:hover {
+      box-shadow: var(--shadow);
+      border-color: var(--teal);
+    }
+
+    .step-num {
+      width: 48px;
+      height: 48px;
+      background: var(--navy);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      margin: 0 auto 20px;
+      font-size: 1.1rem;
+    }
+
+    .step h3 {
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+
+    .step p {
+      color: var(--gray-500);
+      font-size: 0.9rem;
+    }
+
+    /* ========== TEAM ========== */
+    .team {
+      background: white;
+    }
+
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+    }
+
+    .team-card {
+      text-align: center;
+      background: var(--off-white);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: var(--transition);
+      border: 1px solid var(--gray-200);
+    }
+
+    .team-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow);
+    }
+
+    .team-photo {
+      height: 280px;
+      background: var(--navy);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .team-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.9;
+    }
+
+    .team-info {
+      padding: 28px 24px;
+    }
+
+    .team-info h3 {
+      font-size: 1.2rem;
+      margin-bottom: 4px;
+    }
+
+    .team-info .role {
+      color: var(--teal);
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 12px;
+    }
+
+    .team-info p {
+      color: var(--gray-500);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    /* ========== INSIGHTS / VALUE ========== */
+    .value-prop {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+      color: white;
+      padding: 80px 0;
+    }
+
+    .value-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: center;
+    }
+
+    .value-content h2 {
+      color: white;
+      font-size: 2.25rem;
+      margin-bottom: 20px;
+    }
+
+    .value-content p {
+      color: rgba(255,255,255,0.8);
+      margin-bottom: 16px;
+      font-size: 1.05rem;
+    }
+
+    .value-list {
+      list-style: none;
+      margin-top: 28px;
+    }
+
+    .value-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 16px;
+      color: rgba(255,255,255,0.9);
+    }
+
+    .value-list li svg {
+      flex-shrink: 0;
+      margin-top: 3px;
+      color: var(--teal-light);
+    }
+
+    .value-image {
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      aspect-ratio: 4/3;
+    }
+
+    .value-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* ========== CTA / CONTACT ========== */
+    .cta {
+      background: var(--off-white);
+      padding: 100px 0;
+    }
+
+    .cta-box {
+      background: white;
+      border-radius: 20px;
+      padding: 64px;
+      box-shadow: var(--shadow);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      border: 1px solid var(--gray-200);
+    }
+
+    .cta-content h2 {
+      font-size: 2rem;
+      margin-bottom: 16px;
+    }
+
+    .cta-content p {
+      color: var(--gray-500);
+      margin-bottom: 28px;
+      font-size: 1.05rem;
+    }
+
+    .contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--gray-700);
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 14px 16px;
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      transition: var(--transition);
+      background: var(--off-white);
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+      background: white;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 110px;
+    }
+
+    .form-submit {
+      margin-top: 8px;
+    }
+
+    /* ========== FOOTER ========== */
+    footer {
+      background: var(--navy);
+      color: rgba(255,255,255,0.8);
+      padding: 64px 0 32px;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 48px;
+      margin-bottom: 48px;
+    }
+
+    .footer-brand .logo {
+      margin-bottom: 20px;
+    }
+
+    .footer-brand p {
+      font-size: 0.95rem;
+      line-height: 1.7;
+      max-width: 320px;
+    }
+
+    .footer-col h4 {
+      color: white;
+      font-size: 0.95rem;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    .footer-col ul {
+      list-style: none;
+    }
+
+    .footer-col ul li {
+      margin-bottom: 12px;
+    }
+
+    .footer-col a {
+      color: rgba(255,255,255,0.7);
+      font-size: 0.9rem;
+    }
+
+    .footer-col a:hover {
+      color: var(--teal-light);
+    }
+
+    .footer-bottom {
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.875rem;
+    }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 1024px) {
+      .services-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .why-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .process-steps {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .process-steps::before {
+        display: none;
+      }
+      .team-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .footer-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+      .mobile-toggle {
+        display: block;
+      }
+      .hero-stats {
+        flex-direction: column;
+        gap: 24px;
+      }
+      .about-grid,
+      .value-grid,
+      .cta-box {
+        grid-template-columns: 1fr;
+      }
+      .services-grid,
+      .why-grid,
+      .team-grid,
+      .process-steps {
+        grid-template-columns: 1fr;
+      }
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+      .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
+      .footer-bottom {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+      }
+      .cta-box {
+        padding: 40px 24px;
+      }
+      section {
+        padding: 72px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- NAVIGATION -->
+  <nav class="navbar" id="navbar">
+    <div class="container nav-inner">
+      <a href="#" class="logo">
+        <div class="logo-icon">◈</div>
+        The Gateway
+      </a>
+      <div class="nav-links">
+        <a href="#about">About</a>
+        <a href="#services">Services</a>
+        <a href="#approach">Approach</a>
+        <a href="#team">Team</a>
+        <a href="#contact" class="nav-cta">Start a Conversation</a>
+      </div>
+      <button class="mobile-toggle" aria-label="Menu">☰</button>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span>◆</span> Indonesia Market Entry & Logistics Specialists
+        </div>
+        <h1>Your Strategic Gateway to <span>Indonesia’s</span> Growth Corridors</h1>
+        <p class="hero-lead">
+          We advise investors and corporations on developing and expanding operations across Indonesia’s ports, logistics networks, and inter-regional transportation systems — with end-to-end support from strategy to execution.
+        </p>
+        <div class="hero-actions">
+          <a href="#contact" class="btn btn-primary">Discuss Your Project</a>
+          <a href="#services" class="btn btn-secondary">Explore Our Services</a>
+        </div>
+        <div class="hero-stats">
+          <div class="stat-item">
+            <h3>15+</h3>
+            <p>Years Indonesia Expertise</p>
+          </div>
+          <div class="stat-item">
+            <h3>40+</h3>
+            <p>Ports & Logistics Hubs Covered</p>
+          </div>
+          <div class="stat-item">
+            <h3>Global</h3>
+            <p>Network of Partners</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="about" id="about">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-image">
+          <img src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=900&q=80" alt="Modern container port operations in Indonesia">
+        </div>
+        <div class="about-content">
+          <span class="section-label">Who We Are</span>
+          <h2>The Trusted Bridge Between Global Ambition and Indonesian Opportunity</h2>
+          <p>
+            The Gateway is a specialized advisory firm that helps international investors, shipping lines, logistics operators, and industrial players successfully enter, expand, and optimize their presence in Indonesia.
+          </p>
+          <p>
+            Indonesia’s archipelago geography, rapid infrastructure development, and complex regulatory environment create both significant opportunity and operational complexity. We turn that complexity into clarity — combining deep local knowledge with global best practices in ports, logistics, and transportation.
+          </p>
+          <div class="about-highlights">
+            <div class="highlight-card">
+              <strong>Local Depth</strong>
+              <span>On-the-ground expertise across major ports and industrial zones</span>
+            </div>
+            <div class="highlight-card">
+              <strong>Global Perspective</strong>
+              <span>International network and cross-border experience</span>
+            </div>
+            <div class="highlight-card">
+              <strong>End-to-End</strong>
+              <span>From market strategy to permit clearance and operations</span>
+            </div>
+            <div class="highlight-card">
+              <strong>Regulatory Mastery</strong>
+              <span>Navigating Indonesian licensing and compliance with precision</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section class="services" id="services">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-label">What We Deliver</span>
+        <h2>Comprehensive Advisory Across the Logistics Value Chain</h2>
+        <p>We provide integrated services that address every critical dimension of establishing and scaling port, logistics, and transportation operations in Indonesia.</p>
+      </div>
+
+      <div class="services-grid">
+        <!-- Service 1 -->
+        <div class="service-card">
+          <div class="service-icon">📋</div>
+          <h3>Market Entry & Business Expansion</h3>
+          <p>Strategic guidance for investors seeking to establish or scale operations in Indonesia’s logistics and transportation sectors.</p>
+          <ul>
+            <li>Market opportunity assessment & feasibility studies</li>
+            <li>Entry mode selection (JV, acquisition, greenfield)</li>
+            <li>Partner identification & due diligence</li>
+            <li>Business case development & investment structuring</li>
+            <li>Regional expansion roadmaps across provinces</li>
+          </ul>
+        </div>
+
+        <!-- Service 2 -->
+        <div class="service-card">
+          <div class="service-icon">⚓</div>
+          <h3>Port Strategy & Operations Advisory</h3>
+          <p>Expert support for port development, terminal operations, and maritime logistics optimization.</p>
+          <ul>
+            <li>Port selection & capacity analysis</li>
+            <li>Terminal concession & partnership advisory</li>
+            <li>Operational efficiency & throughput improvement</li>
+            <li>Integration with hinterland logistics</li>
+            <li>Sustainability & green port initiatives</li>
+          </ul>
+        </div>
+
+        <!-- Service 3 -->
+        <div class="service-card">
+          <div class="service-icon">📦</div>
+          <h3>Shipment Planning & Cargo Arrangement</h3>
+          <p>End-to-end coordination of cargo movements across Indonesia’s complex multi-modal network.</p>
+          <ul>
+            <li>Multi-modal shipment design (sea, land, rail, air)</li>
+            <li>Cargo booking, scheduling & tracking</li>
+            <li>Specialized cargo handling (project, heavy-lift, reefer)</li>
+            <li>Cost optimization & route engineering</li>
+            <li>Contingency & disruption planning</li>
+          </ul>
+        </div>
+
+        <!-- Service 4 -->
+        <div class="service-card">
+          <div class="service-icon">📑</div>
+          <h3>Regulatory & Permit Clearance</h3>
+          <p>Navigating Indonesia’s licensing, customs, and compliance landscape with speed and accuracy.</p>
+          <ul>
+            <li>Import/export licensing & customs procedures</li>
+            <li>BKPM / OSS system navigation</li>
+            <li>Port & terminal operating permits</li>
+            <li>Environmental & safety compliance (AMDAL, etc.)</li>
+            <li>Ongoing regulatory monitoring & advisory</li>
+          </ul>
+        </div>
+
+        <!-- Service 5 -->
+        <div class="service-card">
+          <div class="service-icon">🚛</div>
+          <h3>Inter-Regional Transportation Networks</h3>
+          <p>Designing efficient transportation solutions connecting Indonesia’s islands, ports, and industrial clusters.</p>
+          <ul>
+            <li>Domestic shipping & ferry network design</li>
+            <li>Road & rail connectivity strategies</li>
+            <li>Last-mile & inland logistics optimization</li>
+            <li>Fleet & capacity planning</li>
+            <li>Cross-island supply chain design</li>
+          </ul>
+        </div>
+
+        <!-- Service 6 -->
+        <div class="service-card">
+          <div class="service-icon">💻</div>
+          <h3>IT & Logistics Infrastructure</h3>
+          <p>Digital and physical infrastructure solutions that modernize logistics operations and visibility.</p>
+          <ul>
+            <li>TMS / WMS / Port Community System advisory</li>
+            <li>Digital twin & visibility platforms</li>
+            <li>Warehouse & distribution center design</li>
+            <li>Automation & smart logistics roadmaps</li>
+            <li>Data integration & performance dashboards</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY INDONESIA -->
+  <section class="why-indonesia">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-label">The Opportunity</span>
+        <h2>Why Indonesia Demands Specialized Expertise</h2>
+        <p>Indonesia is one of the world’s most dynamic logistics markets — and one of the most complex. Success requires more than capital; it requires local intelligence and precise execution.</p>
+      </div>
+      <div class="why-grid">
+        <div class="why-card">
+          <div class="number">17,000+</div>
+          <h3>Islands</h3>
+          <p>An archipelago that demands sophisticated multi-modal and inter-island logistics strategies.</p>
+        </div>
+        <div class="why-card">
+          <div class="number">#1</div>
+          <h3>ASEAN Economy</h3>
+          <p>Largest economy in Southeast Asia with rapidly expanding manufacturing and consumption.</p>
+        </div>
+        <div class="why-card">
+          <div class="number">Major</div>
+          <h3>Infrastructure Push</h3>
+          <p>Ongoing investment in ports, toll roads, and maritime highways under national development plans.</p>
+        </div>
+        <div class="why-card">
+          <div class="number">Complex</div>
+          <h3>Regulatory Landscape</h3>
+          <p>Multiple agencies, evolving rules, and provincial variations that reward deep local knowledge.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- APPROACH -->
+  <section class="approach" id="approach">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-label">How We Work</span>
+        <h2>A Structured Path from Ambition to Operation</h2>
+        <p>Our engagement model is designed for clarity, speed, and measurable outcomes — whether you are evaluating a first investment or optimizing an existing network.</p>
+      </div>
+      <div class="process-steps">
+        <div class="step">
+          <div class="step-num">01</div>
+          <h3>Discover & Diagnose</h3>
+          <p>Deep-dive assessment of your objectives, constraints, and the Indonesian operating environment.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <h3>Design & Strategize</h3>
+          <p>Tailored market entry, logistics network, and regulatory strategies aligned to your commercial goals.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <h3>Enable & Clear</h3>
+          <p>Hands-on support for permits, partnerships, cargo arrangements, and infrastructure readiness.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">04</div>
+          <h3>Operate & Optimize</h3>
+          <p>Ongoing advisory to scale operations, improve performance, and adapt to market changes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VALUE PROP -->
+  <section class="value-prop">
+    <div class="container">
+      <div class="value-grid">
+        <div class="value-content">
+          <span class="section-label" style="color: var(--teal-light);">Why Clients Choose Us</span>
+          <h2>Seasoned Experts. Local Roots. Global Standards.</h2>
+          <p>
+            Our team combines decades of hands-on experience in Indonesian ports, shipping, and logistics with an international network of operators, investors, and technology partners.
+          </p>
+          <p>
+            We do not simply advise — we stay engaged through implementation, ensuring strategies translate into operational reality on the ground.
+          </p>
+          <ul class="value-list">
+            <li>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+              <span>Direct relationships with port authorities, terminal operators, and key regulators</span>
+            </li>
+            <li>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+              <span>Proven track record supporting foreign investment and expansion projects</span>
+            </li>
+            <li>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+              <span>Integrated view across strategy, operations, regulation, and technology</span>
+            </li>
+            <li>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+              <span>Focus on practical, executable recommendations — not theoretical reports</span>
+            </li>
+          </ul>
+        </div>
+        <div class="value-image">
+          <img src="https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?auto=format&fit=crop&w=900&q=80" alt="Container ship and logistics operations">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEAM -->
+  <section class="team" id="team">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-label">Our People</span>
+        <h2>Experienced Practitioners, Not Just Advisors</h2>
+        <p>Our core team brings deep operational and strategic experience across Indonesian ports, logistics, shipping, and related infrastructure — supported by a broader network of specialists.</p>
+      </div>
+      <div class="team-grid">
+        <div class="team-card">
+          <div class="team-photo">
+            <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=600&q=80" alt="Senior Partner">
+          </div>
+          <div class="team-info">
+            <h3>Senior Leadership</h3>
+            <div class="role">Ports & Maritime Strategy</div>
+            <p>Former terminal and port authority executives with extensive experience in concession development and operational turnaround across Indonesia.</p>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="team-photo">
+            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80" alt="Logistics Expert">
+          </div>
+          <div class="team-info">
+            <h3>Logistics & Supply Chain</h3>
+            <div class="role">Network Design & Operations</div>
+            <p>Practitioners who have designed and run multi-modal logistics networks spanning Java, Sumatra, Kalimantan, and Eastern Indonesia.</p>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="team-photo">
+            <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=600&q=80" alt="Regulatory Specialist">
+          </div>
+          <div class="team-info">
+            <h3>Regulatory & Compliance</h3>
+            <div class="role">Licensing & Government Relations</div>
+            <p>Specialists with proven track records navigating BKPM, customs, and multi-agency permitting for foreign investment projects.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT / CTA -->
+  <section class="cta" id="contact">
+    <div class="container">
+      <div class="cta-box">
+        <div class="cta-content">
+          <span class="section-label">Engage Us</span>
+          <h2>Ready to Build Your Presence in Indonesia?</h2>
+          <p>
+            Whether you are evaluating a new investment, expanding an existing operation, or seeking to optimize your logistics footprint, we would welcome a confidential discussion.
+          </p>
+          <p style="color: var(--gray-700); font-size: 0.95rem;">
+            <strong>Typical next step:</strong> A focused discovery call to understand your objectives and outline how we can support your Indonesia ambitions.
+          </p>
+        </div>
+        <form class="contact-form" onsubmit="event.preventDefault(); alert('Thank you. Our team will respond shortly.');">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="name">Full Name *</label>
+              <input type="text" id="name" name="name" required placeholder="Your name">
+            </div>
+            <div class="form-group">
+              <label for="company">Company *</label>
+              <input type="text" id="company" name="company" required placeholder="Organization">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="email">Email *</label>
+              <input type="email" id="email" name="email" required placeholder="you@company.com">
+            </div>
+            <div class="form-group">
+              <label for="interest">Area of Interest</label>
+              <select id="interest" name="interest">
+                <option value="">Select...</option>
+                <option>Market Entry / Expansion</option>
+                <option>Port & Terminal Advisory</option>
+                <option>Shipment & Cargo Solutions</option>
+                <option>Regulatory & Permits</option>
+                <option>Transportation Network</option>
+                <option>IT & Infrastructure</option>
+                <option>Other / General Inquiry</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="message">How can we help?</label>
+            <textarea id="message" name="message" placeholder="Briefly describe your project or question..."></textarea>
+          </div>
+          <div class="form-submit">
+            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Send Message</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="#" class="logo">
+            <div class="logo-icon">◈</div>
+            The Gateway
+          </a>
+          <p>Strategic advisory for investors and operators developing and expanding businesses in Indonesia’s ports, logistics, and transportation sectors.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Services</h4>
+          <ul>
+            <li><a href="#services">Market Entry</a></li>
+            <li><a href="#services">Port Strategy</a></li>
+            <li><a href="#services">Shipment Planning</a></li>
+            <li><a href="#services">Regulatory Clearance</a></li>
+            <li><a href="#services">IT & Infrastructure</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Company</h4>
+          <ul>
+            <li><a href="#about">About Us</a></li>
+            <li><a href="#approach">Our Approach</a></li>
+            <li><a href="#team">Team</a></li>
+            <li><a href="#contact">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Contact</h4>
+          <ul>
+            <li>Indonesia Focus</li>
+            <li>Global Network</li>
+            <li><a href="mailto:hello@thegateway.id">hello@thegateway.id</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 The Gateway. All rights reserved.</span>
+        <span>Confidential Advisory • Indonesia Logistics & Ports</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Navbar scroll effect
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 40) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    });
+  </script>
+</body>
+</html>
