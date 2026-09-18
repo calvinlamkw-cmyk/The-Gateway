@@ -1,0 +1,1973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TOP Logistics | Strategic Advisory for Indonesia Market Entry & Logistics Growth</title>
+  <meta name="description" content="TOP Logistics provides expert advisory to investors developing and expanding business in Indonesia, specializing in ports, logistics, transportation, regulatory compliance, and digital infrastructure.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #0A1F3D;
+      --navy-light: #132A4A;
+      --teal: #0D9488;
+      --teal-dark: #0F766E;
+      --teal-light: #14B8A6;
+      --accent: #F59E0B;
+      --white: #FFFFFF;
+      --off-white: #F8FAFC;
+      --gray-100: #F1F5F9;
+      --gray-200: #E2E8F0;
+      --gray-500: #64748B;
+      --gray-700: #334155;
+      --gray-900: #0F172A;
+      --shadow: 0 10px 40px -10px rgba(10, 31, 61, 0.15);
+      --shadow-lg: 0 25px 50px -12px rgba(10, 31, 61, 0.25);
+      --radius: 12px;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--gray-900);
+      line-height: 1.6;
+      background: var(--white);
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: 'Inter', 'Noto Sans SC', sans-serif;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--navy);
+    }
+
+    a { text-decoration: none; color: inherit; transition: var(--transition); }
+    img { max-width: 100%; height: auto; display: block; }
+
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ========== NAVIGATION ========== */
+    .navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      background: rgba(10, 31, 61, 0.95);
+      backdrop-filter: blur(12px);
+      transition: var(--transition);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .navbar.scrolled {
+      background: rgba(10, 31, 61, 0.98);
+      box-shadow: 0 4px 30px rgba(0,0,0,0.2);
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 72px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--white);
+      font-weight: 700;
+      font-size: 1.3rem;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-mark {
+      width: 38px;
+      height: 38px;
+      flex-shrink: 0;
+    }
+
+    .logo-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.15;
+    }
+
+    .logo-text .logo-top {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+
+    .logo-text .logo-sub {
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      opacity: 0.85;
+      margin-top: 1px;
+    }
+
+    .footer-brand .logo-text .logo-sub {
+      opacity: 0.7;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+
+    .nav-links a {
+      color: rgba(255,255,255,0.85);
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+    .nav-links a:hover { color: var(--teal-light); }
+
+    .nav-cta {
+      background: var(--teal);
+      color: white !important;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .nav-cta:hover {
+      background: var(--teal-dark);
+      transform: translateY(-1px);
+    }
+
+    /* Language Switcher */
+    .lang-switcher {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 8px;
+      padding: 4px;
+    }
+
+    .lang-btn {
+      background: transparent;
+      border: none;
+      color: rgba(255,255,255,0.7);
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: var(--transition);
+      font-family: inherit;
+    }
+
+    .lang-btn:hover { color: white; }
+    .lang-btn.active {
+      background: var(--teal);
+      color: white;
+    }
+
+    .mobile-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    /* ========== HERO ========== */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      background: var(--navy);
+      overflow: hidden;
+      padding-top: 72px;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background: 
+        linear-gradient(135deg, rgba(10, 31, 61, 0.92) 0%, rgba(10, 31, 61, 0.75) 50%, rgba(13, 148, 136, 0.4) 100%),
+        url('https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=2000&q=80') center/cover no-repeat;
+      z-index: 0;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 740px;
+      padding: 80px 0 100px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(13, 148, 136, 0.2);
+      border: 1px solid rgba(13, 148, 136, 0.4);
+      color: var(--teal-light);
+      padding: 8px 16px;
+      border-radius: 100px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 28px;
+      letter-spacing: 0.02em;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.4rem, 5.2vw, 3.6rem);
+      color: white;
+      margin-bottom: 24px;
+      letter-spacing: -0.03em;
+      font-weight: 800;
+    }
+
+    .hero h1 span { color: var(--teal-light); }
+
+    .hero-lead {
+      font-size: 1.2rem;
+      color: rgba(255,255,255,0.85);
+      margin-bottom: 40px;
+      max-width: 580px;
+      font-weight: 400;
+      line-height: 1.7;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 28px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: var(--transition);
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: var(--teal);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--teal-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(13, 148, 136, 0.4);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: white;
+      border: 2px solid rgba(255,255,255,0.3);
+    }
+
+    .btn-secondary:hover {
+      border-color: white;
+      background: rgba(255,255,255,0.08);
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 48px;
+      margin-top: 64px;
+      padding-top: 40px;
+      border-top: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .stat-item h3 {
+      font-size: 2rem;
+      color: white;
+      margin-bottom: 4px;
+    }
+
+    .stat-item p {
+      color: rgba(255,255,255,0.7);
+      font-size: 0.9rem;
+    }
+
+    /* ========== SECTIONS ========== */
+    section { padding: 100px 0; }
+
+    .section-header {
+      max-width: 680px;
+      margin-bottom: 64px;
+    }
+
+    .section-label {
+      display: inline-block;
+      color: var(--teal);
+      font-weight: 600;
+      font-size: 0.875rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .section-header h2 {
+      font-size: clamp(1.9rem, 3.8vw, 2.6rem);
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .section-header p {
+      color: var(--gray-500);
+      font-size: 1.1rem;
+      line-height: 1.7;
+    }
+
+    /* ========== ABOUT ========== */
+    .about { background: var(--off-white); }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+    }
+
+    .about-image {
+      position: relative;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      aspect-ratio: 4/3;
+    }
+
+    .about-image img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+
+    .about-image::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(10,31,61,0.3), transparent);
+    }
+
+    .about-content h2 {
+      font-size: 2.1rem;
+      margin-bottom: 20px;
+    }
+
+    .about-content p {
+      color: var(--gray-700);
+      margin-bottom: 18px;
+      font-size: 1.05rem;
+    }
+
+    .about-highlights {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 32px;
+    }
+
+    .highlight-card {
+      background: white;
+      padding: 18px;
+      border-radius: 10px;
+      border: 1px solid var(--gray-200);
+    }
+
+    .highlight-card strong {
+      display: block;
+      color: var(--navy);
+      margin-bottom: 4px;
+      font-size: 0.95rem;
+    }
+
+    .highlight-card span {
+      color: var(--gray-500);
+      font-size: 0.875rem;
+    }
+
+    /* ========== SERVICES ========== */
+    .services { background: white; }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 26px;
+    }
+
+    .service-card {
+      background: var(--off-white);
+      border-radius: var(--radius);
+      padding: 32px 26px;
+      border: 1px solid transparent;
+      transition: var(--transition);
+    }
+
+    .service-card:hover {
+      border-color: var(--teal);
+      transform: translateY(-6px);
+      box-shadow: var(--shadow);
+      background: white;
+    }
+
+    .service-icon {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, var(--teal), var(--teal-light));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 22px;
+      font-size: 1.4rem;
+      color: white;
+    }
+
+    .service-card h3 {
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+      color: var(--navy);
+    }
+
+    .service-card > p {
+      color: var(--gray-500);
+      font-size: 0.95rem;
+      line-height: 1.65;
+      margin-bottom: 14px;
+    }
+
+    .service-card ul {
+      list-style: none;
+      margin-top: 14px;
+    }
+
+    .service-card ul li {
+      position: relative;
+      padding-left: 18px;
+      color: var(--gray-700);
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+
+    .service-card ul li::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 8px;
+      width: 6px; height: 6px;
+      background: var(--teal);
+      border-radius: 50%;
+    }
+
+    /* ========== WHY INDONESIA ========== */
+    .why-indonesia {
+      background: var(--navy);
+      color: white;
+    }
+
+    .why-indonesia .section-label { color: var(--teal-light); }
+    .why-indonesia h2 { color: white; }
+    .why-indonesia .section-header p { color: rgba(255,255,255,0.7); }
+
+    .why-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 22px;
+    }
+
+    .why-card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius);
+      padding: 30px 22px;
+      transition: var(--transition);
+    }
+
+    .why-card:hover {
+      background: rgba(13, 148, 136, 0.15);
+      border-color: var(--teal);
+    }
+
+    .why-card .number {
+      font-size: 2.3rem;
+      font-weight: 800;
+      color: var(--teal-light);
+      margin-bottom: 12px;
+      line-height: 1;
+    }
+
+    .why-card h3 {
+      color: white;
+      font-size: 1.05rem;
+      margin-bottom: 10px;
+    }
+
+    .why-card p {
+      color: rgba(255,255,255,0.7);
+      font-size: 0.9rem;
+    }
+
+    /* ========== APPROACH ========== */
+    .approach { background: var(--off-white); }
+
+    .process-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 22px;
+      position: relative;
+    }
+
+    .process-steps::before {
+      content: '';
+      position: absolute;
+      top: 40px;
+      left: 10%; right: 10%;
+      height: 2px;
+      background: linear-gradient(to right, var(--teal), var(--teal-light));
+      z-index: 0;
+      opacity: 0.3;
+    }
+
+    .step {
+      background: white;
+      border-radius: var(--radius);
+      padding: 30px 22px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+      border: 1px solid var(--gray-200);
+      transition: var(--transition);
+    }
+
+    .step:hover {
+      box-shadow: var(--shadow);
+      border-color: var(--teal);
+    }
+
+    .step-num {
+      width: 46px; height: 46px;
+      background: var(--navy);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      margin: 0 auto 18px;
+      font-size: 1.05rem;
+    }
+
+    .step h3 {
+      font-size: 1.05rem;
+      margin-bottom: 10px;
+    }
+
+    .step p {
+      color: var(--gray-500);
+      font-size: 0.9rem;
+    }
+
+    /* ========== VALUE ========== */
+    .value-prop {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+      color: white;
+      padding: 80px 0;
+    }
+
+    .value-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: center;
+    }
+
+    .value-content h2 {
+      color: white;
+      font-size: 2.1rem;
+      margin-bottom: 20px;
+    }
+
+    .value-content p {
+      color: rgba(255,255,255,0.8);
+      margin-bottom: 16px;
+      font-size: 1.05rem;
+    }
+
+    .value-list {
+      list-style: none;
+      margin-top: 28px;
+    }
+
+    .value-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 16px;
+      color: rgba(255,255,255,0.9);
+    }
+
+    .value-list li svg {
+      flex-shrink: 0;
+      margin-top: 3px;
+      color: var(--teal-light);
+    }
+
+    .value-image {
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      aspect-ratio: 4/3;
+    }
+
+    .value-image img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+
+    /* ========== TEAM ========== */
+    .team { background: white; }
+
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 30px;
+    }
+
+    .team-card {
+      text-align: center;
+      background: var(--off-white);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: var(--transition);
+      border: 1px solid var(--gray-200);
+    }
+
+    .team-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow);
+    }
+
+    .team-photo {
+      height: 260px;
+      background: var(--navy);
+      overflow: hidden;
+    }
+
+    .team-photo img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      opacity: 0.9;
+    }
+
+    .team-info { padding: 26px 22px; }
+
+    .team-info h3 {
+      font-size: 1.15rem;
+      margin-bottom: 4px;
+    }
+
+    .team-info .role {
+      color: var(--teal);
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 12px;
+    }
+
+    .team-info p {
+      color: var(--gray-500);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    /* ========== CTA ========== */
+    .cta {
+      background: var(--off-white);
+      padding: 100px 0;
+    }
+
+    .cta-box {
+      background: white;
+      border-radius: 20px;
+      padding: 56px;
+      box-shadow: var(--shadow);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      border: 1px solid var(--gray-200);
+    }
+
+    .cta-content h2 {
+      font-size: 1.9rem;
+      margin-bottom: 16px;
+    }
+
+    .cta-content p {
+      color: var(--gray-500);
+      margin-bottom: 20px;
+      font-size: 1.05rem;
+    }
+
+    .contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--gray-700);
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 13px 15px;
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      transition: var(--transition);
+      background: var(--off-white);
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+      background: white;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 110px;
+    }
+
+    /* ========== FOOTER ========== */
+    footer {
+      background: var(--navy);
+      color: rgba(255,255,255,0.8);
+      padding: 64px 0 32px;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 48px;
+      margin-bottom: 48px;
+    }
+
+    .footer-brand .logo { margin-bottom: 20px; }
+
+    .footer-brand p {
+      font-size: 0.95rem;
+      line-height: 1.7;
+      max-width: 320px;
+    }
+
+    .footer-col h4 {
+      color: white;
+      font-size: 0.95rem;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    .footer-col ul { list-style: none; }
+
+    .footer-col ul li { margin-bottom: 12px; }
+
+    .footer-col a {
+      color: rgba(255,255,255,0.7);
+      font-size: 0.9rem;
+    }
+
+    .footer-col a:hover { color: var(--teal-light); }
+
+    .footer-bottom {
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.875rem;
+    }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 1024px) {
+      .services-grid { grid-template-columns: repeat(2, 1fr); }
+      .why-grid { grid-template-columns: repeat(2, 1fr); }
+      .process-steps { grid-template-columns: repeat(2, 1fr); }
+      .process-steps::before { display: none; }
+      .team-grid { grid-template-columns: repeat(2, 1fr); }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .mobile-toggle { display: block; }
+      .hero-stats { flex-direction: column; gap: 24px; }
+      .about-grid, .value-grid, .cta-box { grid-template-columns: 1fr; }
+      .services-grid, .why-grid, .team-grid, .process-steps { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr; gap: 32px; }
+      .footer-bottom { flex-direction: column; gap: 16px; text-align: center; }
+      .cta-box { padding: 36px 22px; }
+      section { padding: 72px 0; }
+      .lang-switcher { margin-left: auto; margin-right: 12px; }
+    }
+
+    /* ========== INTRO SPLASH ========== */
+    .intro-splash {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: #0A1F3D;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 1.2s ease-in-out;
+    }
+
+    .intro-splash.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .intro-splash.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .intro-splash img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transform: scale(1.05);
+      transition: opacity 1.4s ease-out, transform 6s ease-out;
+    }
+
+    .intro-splash.visible img {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .intro-splash .splash-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(10,31,61,0.35) 0%, rgba(10,31,61,0.15) 40%, rgba(10,31,61,0.55) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding-bottom: 12vh;
+      text-align: center;
+    }
+
+    .intro-splash .splash-text {
+      color: white;
+      font-size: clamp(1.4rem, 3.5vw, 2.2rem);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      text-shadow: 0 2px 20px rgba(0,0,0,0.5);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 1s ease 0.6s, transform 1s ease 0.6s;
+    }
+
+    .intro-splash.visible .splash-text {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .intro-splash .splash-sub {
+      color: rgba(255,255,255,0.85);
+      font-size: 1rem;
+      margin-top: 12px;
+      font-weight: 400;
+      opacity: 0;
+      transition: opacity 1s ease 1s;
+    }
+
+    .intro-splash.visible .splash-sub {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <!-- INTRO SPLASH -->
+  <div class="intro-splash" id="introSplash">
+    <img src="indonesia-night.jpg" alt="Indonesia at night">
+    <div class="splash-overlay">
+      <div class="splash-text">TOP Logistics</div>
+      <div class="splash-sub">Indonesia • Ports • Logistics • Growth</div>
+    </div>
+  </div>
+
+  <!-- NAVIGATION -->
+  <nav class="navbar" id="navbar">
+    <div class="container nav-inner">
+      <a href="#" class="logo">
+        <svg class="logo-mark" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="40" height="40" rx="9" fill="url(#logoGrad)"/>
+          <!-- Minimalist Indonesian archipelago -->
+          <rect x="7" y="13" width="18" height="3.2" rx="1.6" fill="white"/>
+          <rect x="12" y="18.5" width="21" height="3.2" rx="1.6" fill="white" fill-opacity="0.9"/>
+          <rect x="9" y="24" width="15" height="3.2" rx="1.6" fill="white" fill-opacity="0.75"/>
+          <defs>
+            <linearGradient id="logoGrad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#0D9488"/>
+              <stop offset="1" stop-color="#14B8A6"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="logo-text">
+          <span class="logo-top">TOP</span>
+          <span class="logo-sub">Logistics</span>
+        </div>
+      </a>
+      <div class="nav-right">
+        <div class="nav-links">
+          <a href="#about" data-i18n="nav_about">About</a>
+          <a href="#services" data-i18n="nav_services">Services</a>
+          <a href="#approach" data-i18n="nav_approach">Approach</a>
+          <a href="#team" data-i18n="nav_team">Team</a>
+          <a href="#contact" class="nav-cta" data-i18n="nav_cta">Start a Conversation</a>
+        </div>
+        <div class="lang-switcher">
+          <button class="lang-btn active" data-lang="en">EN</button>
+          <button class="lang-btn" data-lang="id">ID</button>
+          <button class="lang-btn" data-lang="zh">中文</button>
+        </div>
+        <button class="mobile-toggle" aria-label="Menu">☰</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span>◆</span> <span data-i18n="hero_badge">Indonesia Market Entry & Logistics Specialists</span>
+        </div>
+        <h1 data-i18n="hero_title">Your Strategic Partner for <span>Indonesia’s</span> Growth Corridors</h1>
+        <p class="hero-lead" data-i18n="hero_lead">
+          We advise investors and corporations on developing and expanding operations across Indonesia’s ports, logistics networks, and inter-regional transportation systems — with end-to-end support from strategy to execution.
+        </p>
+        <div class="hero-actions">
+          <a href="#contact" class="btn btn-primary" data-i18n="hero_btn1">Discuss Your Project</a>
+          <a href="#services" class="btn btn-secondary" data-i18n="hero_btn2">Explore Our Services</a>
+        </div>
+        <div class="hero-stats">
+          <div class="stat-item">
+            <h3>15+</h3>
+            <p data-i18n="stat1">Years Indonesia Expertise</p>
+          </div>
+          <div class="stat-item">
+            <h3>40+</h3>
+            <p data-i18n="stat2">Ports & Logistics Hubs Covered</p>
+          </div>
+          <div class="stat-item">
+            <h3 data-i18n="stat3_num">Global</h3>
+            <p data-i18n="stat3">Network of Partners</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="about" id="about">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-image">
+          <img src="port-of-sorong.jpg" alt="Port of Sorong container terminal – Tanto Surya vessel operations">
+        </div>
+        <div class="about-content">
+          <span class="section-label" data-i18n="about_label">Who We Are</span>
+          <h2 data-i18n="about_title">The Trusted Bridge Between Global Ambition and Indonesian Opportunity</h2>
+          <p data-i18n="about_p1">
+            TOP Logistics is a specialized advisory firm that helps international investors, shipping lines, logistics operators, and industrial players successfully enter, expand, and optimize their presence in Indonesia.
+          </p>
+          <p data-i18n="about_p2">
+            Indonesia’s archipelago geography, rapid infrastructure development, and complex regulatory environment create both significant opportunity and operational complexity. We turn that complexity into clarity — combining deep local knowledge with global best practices in ports, logistics, and transportation.
+          </p>
+          <div class="about-highlights">
+            <div class="highlight-card">
+              <strong data-i18n="hl1_title">Local Depth</strong>
+              <span data-i18n="hl1_desc">On-the-ground expertise across major ports and industrial zones</span>
+            </div>
+            <div class="highlight-card">
+              <strong data-i18n="hl2_title">Global Perspective</strong>
+              <span data-i18n="hl2_desc">International network and cross-border experience</span>
+            </div>
+            <div class="highlight-card">
+              <strong data-i18n="hl3_title">End-to-End</strong>
+              <span data-i18n="hl3_desc">From market strategy to permit clearance and operations</span>
+            </div>
+            <div class="highlight-card">
+              <strong data-i18n="hl4_title">Regulatory Mastery</strong>
+              <span data-i18n="hl4_desc">Navigating Indonesian licensing and compliance with precision</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section class="services" id="services">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-label" data-i18n="services_label">What We Deliver</span>
+        <h2 data-i18n="services_title">Comprehensive Advisory Across the Logistics Value Chain</h2>
+        <p data-i18n="services_intro">We provide integrated services that address every critical dimension of establishing and scaling port, logistics, and transportation operations in Indonesia.</p>
+      </div>
+
+      <div class="services-grid">
+        <div class="service-card">
+          <div class="service-icon">📋</div>
+          <h3 data-i18n="s1_title">Market Entry & Business Expansion</h3>
+          <p data-i18n="s1_desc">Strategic guidance for investors seeking to establish or scale operations in Indonesia’s logistics and transportation sectors.</p>
+          <ul>
+            <li data-i18n="s1_li1">Market opportunity assessment & feasibility studies</li>
+            <li data-i18n="s1_li2">Entry mode selection (JV, acquisition, greenfield)</li>
+            <li data-i18n="s1_li3">Partner identification & due diligence</li>
+            <li data-i18n="s1_li4">Business case development & investment structuring</li>
+            <li data-i18n="s1_li5">Regional expansion roadmaps across provinces</li>
+          </ul>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">⚓</div>
+          <h3 data-i18n="s2_title">Port Strategy & Operations Advisory</h3>
+          <p data-i18n="s2_desc">Expert support for port development, terminal operations, and maritime logistics optimization.</p>
+          <ul>
+            <li data-i18n="s2_li1">Port selection & capacity analysis</li>
+            <li data-i18n="s2_li2">Terminal concession & partnership advisory</li>
+            <li data-i18n="s2_li3">Operational efficiency & throughput improvement</li>
+            <li data-i18n="s2_li4">Integration with hinterland logistics</li>
+            <li data-i18n="s2_li5">Sustainability & green port initiatives</li>
+          </ul>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">📦</div>
+          <h3 data-i18n="s3_title">Shipment Planning & Cargo Arrangement</h3>
+          <p data-i18n="s3_desc">End-to-end coordination of cargo movements across Indonesia’s complex multi-modal network.</p>
+          <ul>
+            <li data-i18n="s3_li1">Multi-modal shipment design (sea, land, rail, air)</li>
+            <li data-i18n="s3_li2">Cargo booking, scheduling & tracking</li>
+            <li data-i18n="s3_li3">Specialized cargo handling (project, heavy-lift, reefer)</li>
+            <li data-i18n="s3_li4">Cost optimization & route engineering</li>
+            <li data-i18n="s3_li5">Contingency & disruption planning</li>
+          </ul>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">📑</div>
+          <h3 data-i18n="s4_title">Regulatory & Permit Clearance</h3>
+          <p data-i18n="s4_desc">Navigating Indonesia’s licensing, customs, and compliance landscape with speed and accuracy.</p>
+          <ul>
+            <li data-i18n="s4_li1">Import/export licensing & customs procedures</li>
+            <li data-i18n="s4_li2">BKPM / OSS system navigation</li>
+            <li data-i18n="s4_li3">Port & terminal operating permits</li>
+            <li data-i18n="s4_li4">Environmental & safety compliance (AMDAL, etc.)</li>
+            <li data-i18n="s4_li5">Ongoing regulatory monitoring & advisory</li>
+          </ul>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">🚛</div>
+          <h3 data-i18n="s5_title">Inter-Regional Transportation Networks</h3>
+          <p data-i18n="s5_desc">Designing efficient transportation solutions connecting Indonesia’s islands, ports, and industrial clusters.</p>
+          <ul>
+            <li data-i18n="s5_li1">Domestic shipping & ferry network design</li>
+            <li data-i18n="s5_li2">Road & rail connectivity strategies</li>
+            <li data-i18n="s5_li3">Last-mile & inland logistics optimization</li>
+            <li data-i18n="s5_li4">Fleet & capacity planning</li>
+            <li data-i18n="s5_li5">Cross-island supply chain design</li>
+          </ul>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">💻</div>
+          <h3 data-i18n="s6_title">IT & Logistics Infrastructure</h3>
+          <p data-i18n="s6_desc">Digital and physical infrastructure solutions that modernize logistics operations and visibility.</p>
+          <ul>
+            <li data-i18n="s6_li1">TMS / WMS / Port Community System advisory</li>
+            <li data-i18n="s6_li2">Digital twin & visibility platforms</li>
+            <li data-i18n="s6_li3">Warehouse & distribution center design</li>
+            <li data-i18n="s6_li4">Automation & smart logistics roadmaps</li>
+            <li data-i18n="s6_li5">Data integration & performance dashboards</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY INDONESIA -->
+  <section class="why-indonesia">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-label" data-i18n="why_label">The Opportunity</span>
+        <h2 data-i18n="why_title">Why Indonesia Demands Specialized Expertise</h2>
+        <p data-i18n="why_intro">Indonesia is one of the world’s most dynamic logistics markets — and one of the most complex. Success requires more than capital; it requires local intelligence and precise execution.</p>
+      </div>
+      <div class="why-grid">
+        <div class="why-card">
+          <div class="number">17,000+</div>
+          <h3 data-i18n="why1_title">Islands</h3>
+          <p data-i18n="why1_desc">An archipelago that demands sophisticated multi-modal and inter-island logistics strategies.</p>
+        </div>
+        <div class="why-card">
+          <div class="number">#1</div>
+          <h3 data-i18n="why2_title">ASEAN Economy</h3>
+          <p data-i18n="why2_desc">Largest economy in Southeast Asia with rapidly expanding manufacturing and consumption.</p>
+        </div>
+        <div class="why-card">
+          <div class="number" data-i18n="why3_num">Major</div>
+          <h3 data-i18n="why3_title">Infrastructure Push</h3>
+          <p data-i18n="why3_desc">Ongoing investment in ports, toll roads, and maritime highways under national development plans.</p>
+        </div>
+        <div class="why-card">
+          <div class="number" data-i18n="why4_num">Complex</div>
+          <h3 data-i18n="why4_title">Regulatory Landscape</h3>
+          <p data-i18n="why4_desc">Multiple agencies, evolving rules, and provincial variations that reward deep local knowledge.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- APPROACH -->
+  <section class="approach" id="approach">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-label" data-i18n="approach_label">How We Work</span>
+        <h2 data-i18n="approach_title">A Structured Path from Ambition to Operation</h2>
+        <p data-i18n="approach_intro">Our engagement model is designed for clarity, speed, and measurable outcomes — whether you are evaluating a first investment or optimizing an existing network.</p>
+      </div>
+      <div class="process-steps">
+        <div class="step">
+          <div class="step-num">01</div>
+          <h3 data-i18n="step1_title">Discover & Diagnose</h3>
+          <p data-i18n="step1_desc">Deep-dive assessment of your objectives, constraints, and the Indonesian operating environment.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <h3 data-i18n="step2_title">Design & Strategize</h3>
+          <p data-i18n="step2_desc">Tailored market entry, logistics network, and regulatory strategies aligned to your commercial goals.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <h3 data-i18n="step3_title">Enable & Clear</h3>
+          <p data-i18n="step3_desc">Hands-on support for permits, partnerships, cargo arrangements, and infrastructure readiness.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">04</div>
+          <h3 data-i18n="step4_title">Operate & Optimize</h3>
+          <p data-i18n="step4_desc">Ongoing advisory to scale operations, improve performance, and adapt to market changes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VALUE PROP -->
+  <section class="value-prop">
+    <div class="container">
+      <div class="value-grid">
+        <div class="value-content">
+          <span class="section-label" style="color: var(--teal-light);" data-i18n="value_label">Why Clients Choose Us</span>
+          <h2 data-i18n="value_title">Seasoned Experts. Local Roots. Global Standards.</h2>
+          <p data-i18n="value_p1">
+            Our team combines decades of hands-on experience in Indonesian ports, shipping, and logistics with an international network of operators, investors, and technology partners.
+          </p>
+          <p data-i18n="value_p2">
+            We do not simply advise — we stay engaged through implementation, ensuring strategies translate into operational reality on the ground.
+          </p>
+          <ul class="value-list">
+            <li>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+              <span data-i18n="value_li1">Direct relationships with port authorities, terminal operators, and key regulators</span>
+            </li>
+            <li>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+              <span data-i18n="value_li2">Proven track record supporting foreign investment and expansion projects</span>
+            </li>
+            <li>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+              <span data-i18n="value_li3">Integrated view across strategy, operations, regulation, and technology</span>
+            </li>
+            <li>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+              <span data-i18n="value_li4">Focus on practical, executable recommendations — not theoretical reports</span>
+            </li>
+          </ul>
+        </div>
+        <div class="value-image">
+          <img src="ever-conform.jpg" alt="Ever Conform container vessel at terminal">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEAM -->
+  <section class="team" id="team">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-label" data-i18n="team_label">Our People</span>
+        <h2 data-i18n="team_title">Experienced Practitioners, Not Just Advisors</h2>
+        <p data-i18n="team_intro">Our core team brings deep operational and strategic experience across Indonesian ports, logistics, shipping, and related infrastructure — supported by a broader network of specialists.</p>
+      </div>
+      <div class="team-grid">
+        <div class="team-card">
+          <div class="team-photo">
+            <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=600&q=80" alt="Senior Partner">
+          </div>
+          <div class="team-info">
+            <h3 data-i18n="t1_title">Senior Leadership</h3>
+            <div class="role" data-i18n="t1_role">Ports, Maritime Strategy & Execution</div>
+            <p data-i18n="t1_desc">Former terminal and port authority executives with extensive experience in concession development, operational turnaround, and hands-on execution across Indonesia.</p>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="team-photo">
+            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80" alt="Logistics Expert">
+          </div>
+          <div class="team-info">
+            <h3 data-i18n="t2_title">Logistics & Supply Chain</h3>
+            <div class="role" data-i18n="t2_role">Network Design & Operations</div>
+            <p data-i18n="t2_desc">Practitioners who have designed and run multi-modal logistics networks spanning Java, Sumatra, Kalimantan, and Eastern Indonesia.</p>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="team-photo">
+            <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=600&q=80" alt="Regulatory Specialist">
+          </div>
+          <div class="team-info">
+            <h3 data-i18n="t3_title">Regulatory & Compliance</h3>
+            <div class="role" data-i18n="t3_role">Ports & Logistics Regulatory Affairs</div>
+            <p data-i18n="t3_desc">Specialists with proven track records navigating port, terminal, customs, and logistics-related licensing as well as multi-agency permitting for foreign investment projects.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="cta" id="contact">
+    <div class="container">
+      <div class="cta-box">
+        <div class="cta-content">
+          <span class="section-label" data-i18n="contact_label">Engage Us</span>
+          <h2 data-i18n="contact_title">Ready to Build Your Presence in Indonesia?</h2>
+          <p data-i18n="contact_p1">
+            Whether you are evaluating a new investment, expanding an existing operation, or seeking to optimize your logistics footprint, we would welcome a confidential discussion.
+          </p>
+          <p style="color: var(--gray-700); font-size: 0.95rem;" data-i18n="contact_p2">
+            <strong>Typical next step:</strong> A focused discovery call to understand your objectives and outline how we can support your Indonesia ambitions.
+          </p>
+        </div>
+        <form class="contact-form" onsubmit="event.preventDefault(); alert(translations[currentLang].form_success);">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="name" data-i18n="form_name">Full Name *</label>
+              <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+              <label for="company" data-i18n="form_company">Company *</label>
+              <input type="text" id="company" name="company" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="email" data-i18n="form_email">Email *</label>
+              <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+              <label for="interest" data-i18n="form_interest">Area of Interest</label>
+              <select id="interest" name="interest">
+                <option value="" data-i18n="form_select">Select...</option>
+                <option value="1" data-i18n="form_opt1">Market Entry / Expansion</option>
+                <option value="2" data-i18n="form_opt2">Port & Terminal Advisory</option>
+                <option value="3" data-i18n="form_opt3">Shipment & Cargo Solutions</option>
+                <option value="4" data-i18n="form_opt4">Regulatory & Permits</option>
+                <option value="5" data-i18n="form_opt5">Transportation Network</option>
+                <option value="6" data-i18n="form_opt6">IT & Infrastructure</option>
+                <option value="7" data-i18n="form_opt7">Other / General Inquiry</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="message" data-i18n="form_message">How can we help?</label>
+            <textarea id="message" name="message"></textarea>
+          </div>
+          <div class="form-submit">
+            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;" data-i18n="form_submit">Send Message</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="#" class="logo">
+            <svg class="logo-mark" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="40" height="40" rx="9" fill="url(#logoGradFooter)"/>
+              <!-- Minimalist Indonesian archipelago -->
+              <rect x="7" y="13" width="18" height="3.2" rx="1.6" fill="white"/>
+              <rect x="12" y="18.5" width="21" height="3.2" rx="1.6" fill="white" fill-opacity="0.9"/>
+              <rect x="9" y="24" width="15" height="3.2" rx="1.6" fill="white" fill-opacity="0.75"/>
+              <defs>
+                <linearGradient id="logoGradFooter" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#0D9488"/>
+                  <stop offset="1" stop-color="#14B8A6"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <div class="logo-text">
+              <span class="logo-top">TOP</span>
+              <span class="logo-sub">Logistics</span>
+            </div>
+          </a>
+          <p data-i18n="footer_desc">Strategic advisory for investors and operators developing and expanding businesses in Indonesia’s ports, logistics, and transportation sectors.</p>
+        </div>
+        <div class="footer-col">
+          <h4 data-i18n="footer_services">Services</h4>
+          <ul>
+            <li><a href="#services" data-i18n="footer_s1">Market Entry</a></li>
+            <li><a href="#services" data-i18n="footer_s2">Port Strategy</a></li>
+            <li><a href="#services" data-i18n="footer_s3">Shipment Planning</a></li>
+            <li><a href="#services" data-i18n="footer_s4">Regulatory Clearance</a></li>
+            <li><a href="#services" data-i18n="footer_s5">IT & Infrastructure</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4 data-i18n="footer_company">Company</h4>
+          <ul>
+            <li><a href="#about" data-i18n="nav_about">About Us</a></li>
+            <li><a href="#approach" data-i18n="nav_approach">Our Approach</a></li>
+            <li><a href="#team" data-i18n="nav_team">Team</a></li>
+            <li><a href="#contact" data-i18n="footer_contact">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4 data-i18n="footer_contact_title">Contact</h4>
+          <ul>
+            <li data-i18n="footer_focus">Indonesia Focus</li>
+            <li data-i18n="footer_network">Global Network</li>
+            <li><a href="mailto:hello@toplogistics.id">hello@toplogistics.id</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span data-i18n="footer_copy">© 2026 TOP Logistics. All rights reserved.</span>
+        <span data-i18n="footer_tag">Confidential Advisory • Indonesia Logistics & Ports</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ========== TRANSLATIONS ==========
+    const translations = {
+      en: {
+        // Nav
+        nav_about: "About",
+        nav_services: "Services",
+        nav_approach: "Approach",
+        nav_team: "Team",
+        nav_cta: "Start a Conversation",
+        // Hero
+        hero_badge: "Indonesia Market Entry & Logistics Specialists",
+        hero_title: "Your Strategic Partner for <span>Indonesia’s</span> Growth Corridors",
+        hero_lead: "We advise investors and corporations on developing and expanding operations across Indonesia’s ports, logistics networks, and inter-regional transportation systems — with end-to-end support from strategy to execution.",
+        hero_btn1: "Discuss Your Project",
+        hero_btn2: "Explore Our Services",
+        stat1: "Years Indonesia Expertise",
+        stat2: "Ports & Logistics Hubs Covered",
+        stat3_num: "Global",
+        stat3: "Network of Partners",
+        // About
+        about_label: "Who We Are",
+        about_title: "The Trusted Bridge Between Global Ambition and Indonesian Opportunity",
+        about_p1: "TOP Logistics is a specialized advisory firm that helps international investors, shipping lines, logistics operators, and industrial players successfully enter, expand, and optimize their presence in Indonesia.",
+        about_p2: "Indonesia’s archipelago geography, rapid infrastructure development, and complex regulatory environment create both significant opportunity and operational complexity. We turn that complexity into clarity — combining deep local knowledge with global best practices in ports, logistics, and transportation.",
+        hl1_title: "Local Depth",
+        hl1_desc: "On-the-ground expertise across major ports and industrial zones",
+        hl2_title: "Global Perspective",
+        hl2_desc: "International network and cross-border experience",
+        hl3_title: "End-to-End",
+        hl3_desc: "From market strategy to permit clearance and operations",
+        hl4_title: "Regulatory Mastery",
+        hl4_desc: "Navigating Indonesian licensing and compliance with precision",
+        // Services
+        services_label: "What We Deliver",
+        services_title: "Comprehensive Advisory Across the Logistics Value Chain",
+        services_intro: "We provide integrated services that address every critical dimension of establishing and scaling port, logistics, and transportation operations in Indonesia.",
+        s1_title: "Market Entry & Business Expansion",
+        s1_desc: "Strategic guidance for investors seeking to establish or scale operations in Indonesia’s logistics and transportation sectors.",
+        s1_li1: "Market opportunity assessment & feasibility studies",
+        s1_li2: "Entry mode selection (JV, acquisition, greenfield)",
+        s1_li3: "Partner identification & due diligence",
+        s1_li4: "Business case development & investment structuring",
+        s1_li5: "Regional expansion roadmaps across provinces",
+        s2_title: "Port Strategy & Operations Advisory",
+        s2_desc: "Expert support for port development, terminal operations, and maritime logistics optimization.",
+        s2_li1: "Port selection & capacity analysis",
+        s2_li2: "Terminal concession & partnership advisory",
+        s2_li3: "Operational efficiency & throughput improvement",
+        s2_li4: "Integration with hinterland logistics",
+        s2_li5: "Sustainability & green port initiatives",
+        s3_title: "Shipment Planning & Cargo Arrangement",
+        s3_desc: "End-to-end coordination of cargo movements across Indonesia’s complex multi-modal network.",
+        s3_li1: "Multi-modal shipment design (sea, land, rail, air)",
+        s3_li2: "Cargo booking, scheduling & tracking",
+        s3_li3: "Specialized cargo handling (project, heavy-lift, reefer)",
+        s3_li4: "Cost optimization & route engineering",
+        s3_li5: "Contingency & disruption planning",
+        s4_title: "Regulatory & Permit Clearance",
+        s4_desc: "Navigating Indonesia’s licensing, customs, and compliance landscape with speed and accuracy.",
+        s4_li1: "Import/export licensing & customs procedures",
+        s4_li2: "BKPM / OSS system navigation",
+        s4_li3: "Port & terminal operating permits",
+        s4_li4: "Environmental & safety compliance (AMDAL, etc.)",
+        s4_li5: "Ongoing regulatory monitoring & advisory",
+        s5_title: "Inter-Regional Transportation Networks",
+        s5_desc: "Designing efficient transportation solutions connecting Indonesia’s islands, ports, and industrial clusters.",
+        s5_li1: "Domestic shipping & ferry network design",
+        s5_li2: "Road & rail connectivity strategies",
+        s5_li3: "Last-mile & inland logistics optimization",
+        s5_li4: "Fleet & capacity planning",
+        s5_li5: "Cross-island supply chain design",
+        s6_title: "IT & Logistics Infrastructure",
+        s6_desc: "Digital and physical infrastructure solutions that modernize logistics operations and visibility.",
+        s6_li1: "TMS / WMS / Port Community System advisory",
+        s6_li2: "Digital twin & visibility platforms",
+        s6_li3: "Warehouse & distribution center design",
+        s6_li4: "Automation & smart logistics roadmaps",
+        s6_li5: "Data integration & performance dashboards",
+        // Why
+        why_label: "The Opportunity",
+        why_title: "Why Indonesia Demands Specialized Expertise",
+        why_intro: "Indonesia is one of the world’s most dynamic logistics markets — and one of the most complex. Success requires more than capital; it requires local intelligence and precise execution.",
+        why1_title: "Islands",
+        why1_desc: "An archipelago that demands sophisticated multi-modal and inter-island logistics strategies.",
+        why2_title: "ASEAN Economy",
+        why2_desc: "Largest economy in Southeast Asia with rapidly expanding manufacturing and consumption.",
+        why3_num: "Major",
+        why3_title: "Infrastructure Push",
+        why3_desc: "Ongoing investment in ports, toll roads, and maritime highways under national development plans.",
+        why4_num: "Complex",
+        why4_title: "Regulatory Landscape",
+        why4_desc: "Multiple agencies, evolving rules, and provincial variations that reward deep local knowledge.",
+        // Approach
+        approach_label: "How We Work",
+        approach_title: "A Structured Path from Ambition to Operation",
+        approach_intro: "Our engagement model is designed for clarity, speed, and measurable outcomes — whether you are evaluating a first investment or optimizing an existing network.",
+        step1_title: "Discover & Diagnose",
+        step1_desc: "Deep-dive assessment of your objectives, constraints, and the Indonesian operating environment.",
+        step2_title: "Design & Strategize",
+        step2_desc: "Tailored market entry, logistics network, and regulatory strategies aligned to your commercial goals.",
+        step3_title: "Enable & Clear",
+        step3_desc: "Hands-on support for permits, partnerships, cargo arrangements, and infrastructure readiness.",
+        step4_title: "Operate & Optimize",
+        step4_desc: "Ongoing advisory to scale operations, improve performance, and adapt to market changes.",
+        // Value
+        value_label: "Why Clients Choose Us",
+        value_title: "Seasoned Experts. Local Roots. Global Standards.",
+        value_p1: "Our team combines decades of hands-on experience in Indonesian ports, shipping, and logistics with an international network of operators, investors, and technology partners.",
+        value_p2: "We do not simply advise — we stay engaged through implementation, ensuring strategies translate into operational reality on the ground.",
+        value_li1: "Direct relationships with port authorities, terminal operators, and key regulators",
+        value_li2: "Proven track record supporting foreign investment and expansion projects",
+        value_li3: "Integrated view across strategy, operations, regulation, and technology",
+        value_li4: "Focus on practical, executable recommendations — not theoretical reports",
+        // Team
+        team_label: "Our People",
+        team_title: "Experienced Practitioners, Not Just Advisors",
+        team_intro: "Our core team brings deep operational and strategic experience across Indonesian ports, logistics, shipping, and related infrastructure — supported by a broader network of specialists.",
+        t1_title: "Senior Leadership",
+        t1_role: "Ports, Maritime Strategy & Execution",
+        t1_desc: "Former terminal and port authority executives with extensive experience in concession development, operational turnaround, and hands-on execution across Indonesia.",
+        t2_title: "Logistics & Supply Chain",
+        t2_role: "Network Design & Operations",
+        t2_desc: "Practitioners who have designed and run multi-modal logistics networks spanning Java, Sumatra, Kalimantan, and Eastern Indonesia.",
+        t3_title: "Regulatory & Compliance",
+        t3_role: "Ports & Logistics Regulatory Affairs",
+        t3_desc: "Specialists with proven track records navigating port, terminal, customs, and logistics-related licensing as well as multi-agency permitting for foreign investment projects.",
+        // Contact
+        contact_label: "Engage Us",
+        contact_title: "Ready to Build Your Presence in Indonesia?",
+        contact_p1: "Whether you are evaluating a new investment, expanding an existing operation, or seeking to optimize your logistics footprint, we would welcome a confidential discussion.",
+        contact_p2: "<strong>Typical next step:</strong> A focused discovery call to understand your objectives and outline how we can support your Indonesia ambitions.",
+        form_name: "Full Name *",
+        form_company: "Company *",
+        form_email: "Email *",
+        form_interest: "Area of Interest",
+        form_select: "Select...",
+        form_opt1: "Market Entry / Expansion",
+        form_opt2: "Port & Terminal Advisory",
+        form_opt3: "Shipment & Cargo Solutions",
+        form_opt4: "Regulatory & Permits",
+        form_opt5: "Transportation Network",
+        form_opt6: "IT & Infrastructure",
+        form_opt7: "Other / General Inquiry",
+        form_message: "How can we help?",
+        form_submit: "Send Message",
+        form_success: "Thank you. Our team will respond shortly.",
+        // Footer
+        footer_desc: "Strategic advisory for investors and operators developing and expanding businesses in Indonesia’s ports, logistics, and transportation sectors.",
+        footer_services: "Services",
+        footer_s1: "Market Entry",
+        footer_s2: "Port Strategy",
+        footer_s3: "Shipment Planning",
+        footer_s4: "Regulatory Clearance",
+        footer_s5: "IT & Infrastructure",
+        footer_company: "Company",
+        footer_contact: "Contact",
+        footer_contact_title: "Contact",
+        footer_focus: "Indonesia Focus",
+        footer_network: "Global Network",
+        footer_copy: "© 2026 TOP Logistics. All rights reserved.",
+        footer_tag: "Confidential Advisory • Indonesia Logistics & Ports"
+      },
+
+      id: {
+        // Nav
+        nav_about: "Tentang Kami",
+        nav_services: "Layanan",
+        nav_approach: "Pendekatan",
+        nav_team: "Tim",
+        nav_cta: "Mulai Percakapan",
+        // Hero
+        hero_badge: "Spesialis Masuk Pasar & Logistik Indonesia",
+        hero_title: "Mitra Strategis untuk Koridor Pertumbuhan <span>Indonesia</span>",
+        hero_lead: "Kami memberikan advisori kepada investor dan korporasi dalam mengembangkan serta memperluas operasi di pelabuhan, jaringan logistik, dan sistem transportasi antarwilayah Indonesia — dengan dukungan menyeluruh dari strategi hingga eksekusi.",
+        hero_btn1: "Diskusikan Proyek Anda",
+        hero_btn2: "Jelajahi Layanan Kami",
+        stat1: "Tahun Keahlian di Indonesia",
+        stat2: "Pelabuhan & Hub Logistik Tercakup",
+        stat3_num: "Global",
+        stat3: "Jaringan Mitra",
+        // About
+        about_label: "Siapa Kami",
+        about_title: "Jembatan Terpercaya antara Ambisi Global dan Peluang Indonesia",
+        about_p1: "TOP Logistics adalah firma advisori khusus yang membantu investor internasional, perusahaan pelayaran, operator logistik, dan pelaku industri untuk berhasil memasuki, memperluas, dan mengoptimalkan kehadiran mereka di Indonesia.",
+        about_p2: "Geografi kepulauan Indonesia, pembangunan infrastruktur yang pesat, serta lingkungan regulasi yang kompleks menciptakan peluang besar sekaligus tantangan operasional. Kami mengubah kompleksitas tersebut menjadi kejelasan — dengan menggabungkan pengetahuan lokal yang mendalam dan praktik terbaik global di bidang pelabuhan, logistik, dan transportasi.",
+        hl1_title: "Kedalaman Lokal",
+        hl1_desc: "Keahlian di lapangan di pelabuhan utama dan kawasan industri",
+        hl2_title: "Perspektif Global",
+        hl2_desc: "Jaringan internasional dan pengalaman lintas batas",
+        hl3_title: "Ujung ke Ujung",
+        hl3_desc: "Dari strategi pasar hingga pengurusan izin dan operasi",
+        hl4_title: "Penguasaan Regulasi",
+        hl4_desc: "Menavigasi perizinan dan kepatuhan Indonesia dengan presisi",
+        // Services
+        services_label: "Yang Kami Tawarkan",
+        services_title: "Advisori Komprehensif di Seluruh Rantai Nilai Logistik",
+        services_intro: "Kami menyediakan layanan terintegrasi yang mencakup setiap dimensi penting dalam membangun dan mengembangkan operasi pelabuhan, logistik, dan transportasi di Indonesia.",
+        s1_title: "Masuk Pasar & Ekspansi Bisnis",
+        s1_desc: "Panduan strategis bagi investor yang ingin mendirikan atau mengembangkan operasi di sektor logistik dan transportasi Indonesia.",
+        s1_li1: "Penilaian peluang pasar & studi kelayakan",
+        s1_li2: "Pemilihan mode masuk (JV, akuisisi, greenfield)",
+        s1_li3: "Identifikasi mitra & due diligence",
+        s1_li4: "Pengembangan business case & struktur investasi",
+        s1_li5: "Peta jalan ekspansi regional antarprovinsi",
+        s2_title: "Strategi & Operasi Pelabuhan",
+        s2_desc: "Dukungan ahli untuk pengembangan pelabuhan, operasi terminal, dan optimalisasi logistik maritim.",
+        s2_li1: "Pemilihan pelabuhan & analisis kapasitas",
+        s2_li2: "Advisori konsesi terminal & kemitraan",
+        s2_li3: "Peningkatan efisiensi operasional & throughput",
+        s2_li4: "Integrasi dengan logistik hinterland",
+        s2_li5: "Inisiatif pelabuhan berkelanjutan & green port",
+        s3_title: "Perencanaan Pengiriman & Pengaturan Kargo",
+        s3_desc: "Koordinasi menyeluruh pergerakan kargo di seluruh jaringan multimodal Indonesia yang kompleks.",
+        s3_li1: "Desain pengiriman multimodal (laut, darat, kereta, udara)",
+        s3_li2: "Pemesanan kargo, penjadwalan & pelacakan",
+        s3_li3: "Penanganan kargo khusus (proyek, heavy-lift, reefer)",
+        s3_li4: "Optimalisasi biaya & rekayasa rute",
+        s3_li5: "Perencanaan kontinjensi & gangguan",
+        s4_title: "Regulasi & Pengurusan Izin",
+        s4_desc: "Menavigasi lanskap perizinan, kepabeanan, dan kepatuhan Indonesia dengan cepat dan akurat.",
+        s4_li1: "Perizinan impor/ekspor & prosedur kepabeanan",
+        s4_li2: "Navigasi sistem BKPM / OSS",
+        s4_li3: "Izin operasi pelabuhan & terminal",
+        s4_li4: "Kepatuhan lingkungan & keselamatan (AMDAL, dll.)",
+        s4_li5: "Pemantauan & advisori regulasi berkelanjutan",
+        s5_title: "Jaringan Transportasi Antarwilayah",
+        s5_desc: "Merancang solusi transportasi efisien yang menghubungkan pulau, pelabuhan, dan klaster industri di Indonesia.",
+        s5_li1: "Desain jaringan pelayaran domestik & ferry",
+        s5_li2: "Strategi konektivitas jalan & kereta api",
+        s5_li3: "Optimalisasi logistik last-mile & darat",
+        s5_li4: "Perencanaan armada & kapasitas",
+        s5_li5: "Desain rantai pasok lintas pulau",
+        s6_title: "IT & Infrastruktur Logistik",
+        s6_desc: "Solusi infrastruktur digital dan fisik yang memodernisasi operasi logistik serta meningkatkan visibilitas.",
+        s6_li1: "Advisori TMS / WMS / Port Community System",
+        s6_li2: "Platform digital twin & visibilitas",
+        s6_li3: "Desain gudang & pusat distribusi",
+        s6_li4: "Peta jalan otomasi & smart logistics",
+        s6_li5: "Integrasi data & dashboard kinerja",
+        // Why
+        why_label: "Peluang",
+        why_title: "Mengapa Indonesia Membutuhkan Keahlian Khusus",
+        why_intro: "Indonesia adalah salah satu pasar logistik paling dinamis di dunia — sekaligus salah satu yang paling kompleks. Keberhasilan membutuhkan lebih dari sekadar modal; ia membutuhkan kecerdasan lokal dan eksekusi yang presisi.",
+        why1_title: "Pulau",
+        why1_desc: "Kepulauan yang menuntut strategi logistik multimodal dan antarpulau yang canggih.",
+        why2_title: "Ekonomi ASEAN",
+        why2_desc: "Ekonomi terbesar di Asia Tenggara dengan manufaktur dan konsumsi yang berkembang pesat.",
+        why3_num: "Besar",
+        why3_title: "Dorongan Infrastruktur",
+        why3_desc: "Investasi berkelanjutan di pelabuhan, jalan tol, dan tol laut di bawah rencana pembangunan nasional.",
+        why4_num: "Kompleks",
+        why4_title: "Lanskap Regulasi",
+        why4_desc: "Berbagai lembaga, aturan yang terus berkembang, dan variasi antarprovinsi yang menghargai pengetahuan lokal yang mendalam.",
+        // Approach
+        approach_label: "Cara Kami Bekerja",
+        approach_title: "Jalur Terstruktur dari Ambisi hingga Operasi",
+        approach_intro: "Model keterlibatan kami dirancang untuk kejelasan, kecepatan, dan hasil yang terukur — baik Anda sedang mengevaluasi investasi pertama maupun mengoptimalkan jaringan yang sudah ada.",
+        step1_title: "Temukan & Diagnosis",
+        step1_desc: "Penilaian mendalam terhadap tujuan, kendala, dan lingkungan operasional di Indonesia.",
+        step2_title: "Rancang & Strategi",
+        step2_desc: "Strategi masuk pasar, jaringan logistik, dan regulasi yang disesuaikan dengan tujuan komersial Anda.",
+        step3_title: "Aktifkan & Bersihkan",
+        step3_desc: "Dukungan langsung untuk perizinan, kemitraan, pengaturan kargo, dan kesiapan infrastruktur.",
+        step4_title: "Operasikan & Optimalkan",
+        step4_desc: "Advisori berkelanjutan untuk mengembangkan operasi, meningkatkan kinerja, dan beradaptasi dengan perubahan pasar.",
+        // Value
+        value_label: "Mengapa Klien Memilih Kami",
+        value_title: "Pakar Berpengalaman. Akar Lokal. Standar Global.",
+        value_p1: "Tim kami menggabungkan puluhan tahun pengalaman praktis di pelabuhan, pelayaran, dan logistik Indonesia dengan jaringan internasional operator, investor, dan mitra teknologi.",
+        value_p2: "Kami tidak hanya memberikan advisori — kami tetap terlibat hingga implementasi, memastikan strategi benar-benar menjadi realitas operasional di lapangan.",
+        value_li1: "Hubungan langsung dengan otoritas pelabuhan, operator terminal, dan regulator utama",
+        value_li2: "Rekam jejak terbukti dalam mendukung investasi asing dan proyek ekspansi",
+        value_li3: "Pandangan terintegrasi lintas strategi, operasi, regulasi, dan teknologi",
+        value_li4: "Fokus pada rekomendasi praktis dan dapat dieksekusi — bukan laporan teoritis",
+        // Team
+        team_label: "Tim Kami",
+        team_title: "Praktisi Berpengalaman, Bukan Sekadar Penasihat",
+        team_intro: "Tim inti kami membawa pengalaman operasional dan strategis yang mendalam di pelabuhan, logistik, pelayaran, dan infrastruktur terkait di Indonesia — didukung oleh jaringan spesialis yang lebih luas.",
+        t1_title: "Kepemimpinan Senior",
+        t1_role: "Strategi, Maritim & Eksekusi Pelabuhan",
+        t1_desc: "Mantan eksekutif terminal dan otoritas pelabuhan dengan pengalaman luas dalam pengembangan konsesi, turnaround operasional, serta eksekusi langsung di seluruh Indonesia.",
+        t2_title: "Logistik & Rantai Pasok",
+        t2_role: "Desain Jaringan & Operasi",
+        t2_desc: "Praktisi yang telah merancang dan menjalankan jaringan logistik multimodal di Jawa, Sumatera, Kalimantan, dan Indonesia Timur.",
+        t3_title: "Regulasi & Kepatuhan",
+        t3_role: "Urusan Regulasi Pelabuhan & Logistik",
+        t3_desc: "Spesialis dengan rekam jejak terbukti dalam menavigasi perizinan terkait pelabuhan, terminal, kepabeanan, dan logistik serta perizinan multi-lembaga untuk proyek investasi asing.",
+        // Contact
+        contact_label: "Hubungi Kami",
+        contact_title: "Siap Membangun Kehadiran Anda di Indonesia?",
+        contact_p1: "Baik Anda sedang mengevaluasi investasi baru, memperluas operasi yang sudah ada, atau ingin mengoptimalkan jejak logistik, kami menyambut diskusi yang bersifat rahasia.",
+        contact_p2: "<strong>Langkah berikutnya yang umum:</strong> Panggilan discovery terfokus untuk memahami tujuan Anda dan menguraikan bagaimana kami dapat mendukung ambisi Indonesia Anda.",
+        form_name: "Nama Lengkap *",
+        form_company: "Perusahaan *",
+        form_email: "Email *",
+        form_interest: "Bidang Minat",
+        form_select: "Pilih...",
+        form_opt1: "Masuk Pasar / Ekspansi",
+        form_opt2: "Advisori Pelabuhan & Terminal",
+        form_opt3: "Solusi Pengiriman & Kargo",
+        form_opt4: "Regulasi & Izin",
+        form_opt5: "Jaringan Transportasi",
+        form_opt6: "IT & Infrastruktur",
+        form_opt7: "Lainnya / Pertanyaan Umum",
+        form_message: "Bagaimana kami dapat membantu?",
+        form_submit: "Kirim Pesan",
+        form_success: "Terima kasih. Tim kami akan segera merespons.",
+        // Footer
+        footer_desc: "Advisori strategis bagi investor dan operator yang mengembangkan serta memperluas bisnis di sektor pelabuhan, logistik, dan transportasi Indonesia.",
+        footer_services: "Layanan",
+        footer_s1: "Masuk Pasar",
+        footer_s2: "Strategi Pelabuhan",
+        footer_s3: "Perencanaan Pengiriman",
+        footer_s4: "Pengurusan Regulasi",
+        footer_s5: "IT & Infrastruktur",
+        footer_company: "Perusahaan",
+        footer_contact: "Kontak",
+        footer_contact_title: "Kontak",
+        footer_focus: "Fokus Indonesia",
+        footer_network: "Jaringan Global",
+        footer_copy: "© 2026 TOP Logistics. Hak cipta dilindungi.",
+        footer_tag: "Advisori Rahasia • Logistik & Pelabuhan Indonesia"
+      },
+
+      zh: {
+        // Nav
+        nav_about: "关于我们",
+        nav_services: "服务",
+        nav_approach: "方法论",
+        nav_team: "团队",
+        nav_cta: "开启对话",
+        // Hero
+        hero_badge: "印尼市场进入与物流专家",
+        hero_title: "您通往<span>印尼</span>增长走廊的战略合作伙伴",
+        hero_lead: "我们为投资者与企业提供专业顾问服务，协助其在印尼港口、物流网络及跨区域运输体系中开发与扩展业务——从战略规划到落地执行，提供全程支持。",
+        hero_btn1: "讨论您的项目",
+        hero_btn2: "了解我们的服务",
+        stat1: "年印尼深耕经验",
+        stat2: "覆盖港口与物流枢纽",
+        stat3_num: "全球",
+        stat3: "合作伙伴网络",
+        // About
+        about_label: "我们是谁",
+        about_title: "连接全球雄心与印尼机遇的可信桥梁",
+        about_p1: "TOP Logistics 是一家专注顾问机构，协助国际投资者、船公司、物流运营商及工业企业成功进入、扩展并优化其在印尼的业务布局。",
+        about_p2: "印尼的群岛地理、快速推进的基础设施建设以及复杂的监管环境，既带来显著机遇，也带来运营挑战。我们将复杂性转化为清晰路径——融合深厚的本地洞察与港口、物流、运输领域的全球最佳实践。",
+        hl1_title: "本地深度",
+        hl1_desc: "覆盖主要港口与工业区的实地专业能力",
+        hl2_title: "全球视野",
+        hl2_desc: "国际网络与跨境实战经验",
+        hl3_title: "端到端",
+        hl3_desc: "从市场战略到许可审批与运营落地",
+        hl4_title: "监管专长",
+        hl4_desc: "精准驾驭印尼许可与合规体系",
+        // Services
+        services_label: "我们提供的服务",
+        services_title: "覆盖物流价值链的全面顾问服务",
+        services_intro: "我们提供一体化服务，全面覆盖在印尼建立与扩展港口、物流及运输业务的关键环节。",
+        s1_title: "市场进入与业务扩展",
+        s1_desc: "为有意在印尼物流与运输领域建立或扩展业务的投资者提供战略指导。",
+        s1_li1: "市场机会评估与可行性研究",
+        s1_li2: "进入模式选择（合资、收购、绿地投资）",
+        s1_li3: "合作伙伴识别与尽职调查",
+        s1_li4: "商业论证开发与投资结构设计",
+        s1_li5: "跨省份区域扩展路线图",
+        s2_title: "港口战略与运营顾问",
+        s2_desc: "为港口开发、码头运营及海运物流优化提供专业支持。",
+        s2_li1: "港口选择与产能分析",
+        s2_li2: "码头特许权与合作伙伴顾问",
+        s2_li3: "运营效率与吞吐量提升",
+        s2_li4: "与腹地物流的整合",
+        s2_li5: "可持续发展与绿色港口倡议",
+        s3_title: "运输规划与货物安排",
+        s3_desc: "对印尼复杂多式联运网络中的货物流动进行端到端协调。",
+        s3_li1: "多式联运方案设计（海运、陆运、铁路、空运）",
+        s3_li2: "货物订舱、调度与追踪",
+        s3_li3: "特种货物处理（项目货、重件、冷藏）",
+        s3_li4: "成本优化与路线工程",
+        s3_li5: "应急与中断预案",
+        s4_title: "监管与许可清关",
+        s4_desc: "快速、准确地驾驭印尼许可、海关与合规体系。",
+        s4_li1: "进出口许可与海关程序",
+        s4_li2: "BKPM / OSS 系统导航",
+        s4_li3: "港口与码头运营许可",
+        s4_li4: "环境与安全合规（AMDAL 等）",
+        s4_li5: "持续监管监测与顾问",
+        s5_title: "跨区域运输网络",
+        s5_desc: "设计高效运输方案，连接印尼各岛屿、港口与产业集群。",
+        s5_li1: "国内航运与渡轮网络设计",
+        s5_li2: "公路与铁路连通策略",
+        s5_li3: "末端与内陆物流优化",
+        s5_li4: "车队与运力规划",
+        s5_li5: "跨岛供应链设计",
+        s6_title: "IT 与物流基础设施",
+        s6_desc: "数字化与实体基础设施解决方案，实现物流运营现代化与可视化。",
+        s6_li1: "TMS / WMS / 港口社区系统顾问",
+        s6_li2: "数字孪生与可视化平台",
+        s6_li3: "仓库与配送中心设计",
+        s6_li4: "自动化与智慧物流路线图",
+        s6_li5: "数据整合与绩效仪表盘",
+        // Why
+        why_label: "机遇所在",
+        why_title: "为何印尼需要专业专长",
+        why_intro: "印尼是全球最具活力的物流市场之一——同时也是最复杂的市场之一。成功不仅需要资本，更需要本地洞察与精准执行。",
+        why1_title: "岛屿",
+        why1_desc: "群岛地理要求高度成熟的多式联运与跨岛物流策略。",
+        why2_title: "东盟经济体",
+        why2_desc: "东南亚最大经济体，制造业与消费市场快速扩张。",
+        why3_num: "重大",
+        why3_title: "基础设施推进",
+        why3_desc: "在国家发展规划下持续投资港口、收费公路与海上高速通道。",
+        why4_num: "复杂",
+        why4_title: "监管环境",
+        why4_desc: "多部门监管、规则持续演变以及省级差异，深度本地知识成为关键优势。",
+        // Approach
+        approach_label: "我们的工作方式",
+        approach_title: "从愿景到运营的结构化路径",
+        approach_intro: "我们的服务模式以清晰、高效与可衡量成果为导向——无论您是评估首次投资，还是优化现有网络。",
+        step1_title: "洞察与诊断",
+        step1_desc: "深入评估您的目标、约束条件以及印尼运营环境。",
+        step2_title: "设计与战略",
+        step2_desc: "制定与商业目标对齐的市场进入、物流网络与监管策略。",
+        step3_title: "赋能与清关",
+        step3_desc: "在许可、合作伙伴、货物安排与基础设施准备方面提供实操支持。",
+        step4_title: "运营与优化",
+        step4_desc: "持续顾问服务，帮助扩展运营、提升绩效并适应市场变化。",
+        // Value
+        value_label: "客户为何选择我们",
+        value_title: "资深专家。本地根基。全球标准。",
+        value_p1: "我们的团队将在印尼港口、航运与物流领域数十年的实战经验，与运营商、投资者及技术合作伙伴的国际网络相结合。",
+        value_p2: "我们不仅提供建议——更全程参与实施，确保战略真正转化为落地的运营成果。",
+        value_li1: "与港口当局、码头运营商及关键监管机构建立直接关系",
+        value_li2: "支持外商投资与扩展项目的成功实践记录",
+        value_li3: "战略、运营、监管与技术的一体化视角",
+        value_li4: "专注于可执行的实践建议，而非纸上谈兵的报告",
+        // Team
+        team_label: "我们的团队",
+        team_title: "经验丰富的实战者，而非纸上顾问",
+        team_intro: "核心团队在印尼港口、物流、航运及相关基础设施领域拥有深厚的运营与战略经验，并得到更广泛专家网络的支持。",
+        t1_title: "高层领导",
+        t1_role: "港口、海事战略与执行",
+        t1_desc: "前码头与港口管理局高管，在印尼特许权开发、运营扭亏以及一线执行方面拥有丰富经验。",
+        t2_title: "物流与供应链",
+        t2_role: "网络设计与运营",
+        t2_desc: "曾设计并运营覆盖爪哇、苏门答腊、加里曼丹及印尼东部的多式联运物流网络的实战专家。",
+        t3_title: "监管与合规",
+        t3_role: "港口与物流监管事务",
+        t3_desc: "在港口、码头、海关及物流相关许可以及多部门审批方面拥有成功实践记录的外商投资项目专家。",
+        // Contact
+        contact_label: "与我们联系",
+        contact_title: "准备在印尼建立您的业务布局？",
+        contact_p1: "无论您正在评估新投资、扩展现有业务，还是希望优化物流布局，我们都欢迎进行保密沟通。",
+        contact_p2: "<strong>典型下一步：</strong>一次聚焦的初步沟通，了解您的目标并说明我们如何支持您的印尼发展计划。",
+        form_name: "姓名 *",
+        form_company: "公司 *",
+        form_email: "电子邮箱 *",
+        form_interest: "关注领域",
+        form_select: "请选择...",
+        form_opt1: "市场进入 / 业务扩展",
+        form_opt2: "港口与码头顾问",
+        form_opt3: "运输与货物方案",
+        form_opt4: "监管与许可",
+        form_opt5: "运输网络",
+        form_opt6: "IT 与基础设施",
+        form_opt7: "其他 / 一般咨询",
+        form_message: "我们如何为您提供帮助？",
+        form_submit: "发送信息",
+        form_success: "感谢您的留言。我们的团队将尽快回复。",
+        // Footer
+        footer_desc: "为在印尼港口、物流与运输领域开发与扩展业务的投资者和运营商提供战略顾问服务。",
+        footer_services: "服务",
+        footer_s1: "市场进入",
+        footer_s2: "港口战略",
+        footer_s3: "运输规划",
+        footer_s4: "监管清关",
+        footer_s5: "IT 与基础设施",
+        footer_company: "公司",
+        footer_contact: "联系",
+        footer_contact_title: "联系方式",
+        footer_focus: "聚焦印尼",
+        footer_network: "全球网络",
+        footer_copy: "© 2026 TOP Logistics. 保留所有权利。",
+        footer_tag: "保密顾问服务 • 印尼物流与港口"
+      }
+    };
+
+    let currentLang = localStorage.getItem('toplogistics_lang') || 'en';
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('toplogistics_lang', lang);
+      document.documentElement.lang = lang === 'zh' ? 'zh-CN' : lang;
+
+      // Update all elements with data-i18n
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[lang][key] !== undefined) {
+          el.innerHTML = translations[lang][key];
+        }
+      });
+
+      // Update language buttons
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+      });
+
+      // Update page title
+      const titles = {
+        en: "TOP Logistics | Strategic Advisory for Indonesia Market Entry & Logistics Growth",
+        id: "TOP Logistics | Advisori Strategis untuk Masuk Pasar & Pertumbuhan Logistik Indonesia",
+        zh: "TOP Logistics | 印尼市场进入与物流增长战略顾问"
+      };
+      document.title = titles[lang];
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      setLanguage(currentLang);
+
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          setLanguage(btn.getAttribute('data-lang'));
+        });
+      });
+
+      // Navbar scroll effect
+      const navbar = document.getElementById('navbar');
+      window.addEventListener('scroll', () => {
+        navbar.classList.toggle('scrolled', window.scrollY > 40);
+      });
+
+      // ===== Intro Splash Sequence =====
+      const splash = document.getElementById('introSplash');
+      if (splash) {
+        // Ensure we start at the very top
+        window.scrollTo(0, 0);
+
+        // Small delay so the page paints first, then fade in
+        setTimeout(() => {
+          splash.classList.add('visible');
+        }, 80);
+
+        // Hold the photo, then fade out
+        setTimeout(() => {
+          splash.classList.add('fade-out');
+          // After fade-out completes, remove overlay and guarantee top of page is shown
+          setTimeout(() => {
+            splash.remove();
+            window.scrollTo({ top: 0, behavior: 'instant' });
+          }, 1300);
+        }, 3200); // total visible time ≈ 3.2s
+      }
+    });
+  </script>
+</body>
+</html>
