@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mark Six Professional Analysis Dashboard | 49-Ball Era</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1419;
+    --surface: #1a2332;
+    --surface2: #243044;
+    --border: #2d3a4f;
+    --text: #e7ecf3;
+    --muted: #8b9cb3;
+    --accent: #3b82f6;
+    --accent2: #10b981;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --purple: #8b5cf6;
+    --cyan: #06b6d4;
+    --pink: #ec4899;
+    --radius: 12px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.35);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+    min-height: 100vh;
+  }
+  .container { max-width: 1400px; margin: 0 auto; padding: 24px 20px 60px; }
+  header {
+    text-align: center;
+    margin-bottom: 32px;
+    padding: 32px 20px;
+    background: linear-gradient(135deg, #1a2332 0%, #0f172a 50%, #1e293b 100%);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+  }
+  header h1 {
+    font-size: 1.85rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    background: linear-gradient(90deg, #60a5fa, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+  header p { color: var(--muted); font-size: 0.95rem; max-width: 720px; margin: 0 auto; }
+  .badge {
+    display: inline-block;
+    background: rgba(59,130,246,0.15);
+    color: #93c5fd;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 999px;
+    margin-top: 12px;
+    border: 1px solid rgba(59,130,246,0.3);
+  }
+  /* Upload */
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 48px 24px;
+    text-align: center;
+    background: var(--surface);
+    transition: all 0.25s;
+    cursor: pointer;
+    margin-bottom: 28px;
+  }
+  .upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--accent);
+    background: rgba(59,130,246,0.06);
+  }
+  .upload-zone svg { width: 48px; height: 48px; margin-bottom: 12px; opacity: 0.7; }
+  .upload-zone h3 { font-size: 1.15rem; margin-bottom: 6px; }
+  .upload-zone p { color: var(--muted); font-size: 0.875rem; }
+  #fileInput { display: none; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 16px;
+  }
+  .btn:hover { background: #2563eb; }
+  .btn-secondary { background: var(--surface2); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: var(--border); }
+  /* Status */
+  .status-bar {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .status-bar.show { display: flex; }
+  .stat-pill {
+    background: var(--surface2);
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+  }
+  .stat-pill strong { color: var(--accent2); }
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    padding: 6px;
+    border-radius: var(--radius);
+    margin-bottom: 24px;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+  }
+  .tab {
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .tab:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+  .tab.active { background: var(--accent); color: white; }
+  .panel { display: none; }
+  .panel.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  /* Cards */
+  .grid { display: grid; gap: 20px; }
+  .grid-2 { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+  .grid-3 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  .grid-4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 650;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card h3 .icon { font-size: 1.1rem; }
+  .kpi {
+    text-align: center;
+    padding: 16px 8px;
+  }
+  .kpi .value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--accent2);
+    line-height: 1.2;
+  }
+  .kpi .label { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+  .chart-wrap { position: relative; height: 320px; }
+  .chart-wrap.tall { height: 420px; }
+  .chart-wrap.short { height: 260px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  th, td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    background: var(--surface2);
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    position: sticky;
+    top: 0;
+  }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .num-ball {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin: 1px;
+    color: #0f1419;
+  }
+  .ball-red { background: #f87171; }
+  .ball-blue { background: #60a5fa; }
+  .ball-green { background: #4ade80; }
+  .ball-extra { background: #fbbf24; border: 2px solid #f59e0b; }
+  .insight {
+    background: rgba(16,185,129,0.08);
+    border-left: 3px solid var(--accent2);
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 12px 0;
+    font-size: 0.9rem;
+  }
+  .insight.warn { background: rgba(245,158,11,0.08); border-left-color: var(--warn); }
+  .insight.info { background: rgba(59,130,246,0.08); border-left-color: var(--accent); }
+  .section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 28px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .loading {
+    text-align: center;
+    padding: 60px;
+    color: var(--muted);
+  }
+  .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .table-scroll { max-height: 420px; overflow: auto; border-radius: 8px; border: 1px solid var(--border); }
+  .filter-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    align-items: center;
+  }
+  .filter-row label { font-size: 0.85rem; color: var(--muted); }
+  .filter-row select, .filter-row input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+  }
+  footer {
+    text-align: center;
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+  @media (max-width: 640px) {
+    header h1 { font-size: 1.4rem; }
+    .kpi .value { font-size: 1.4rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Mark Six Professional Analysis Dashboard</h1>
+    <p>Upload the official HKJC Mark Six results CSV (same schema as data.hkjc.guru). Analysis is restricted to the modern <strong>6-from-49</strong> era (from July 2002 onward) for statistical validity.</p>
+    <span class="badge">Data Analyst &amp; Data Engineer Grade · Client-side · Privacy-first</span>
+  </header>
+
+  <div class="upload-zone" id="uploadZone">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+    </svg>
+    <h3>Drop CSV here or click to browse</h3>
+    <p>Expected columns: draw_id, draw_date, ball_1 … ball_6, extra_ball, total_sales, jackpot_amount, …</p>
+    <button class="btn" onclick="document.getElementById('fileInput').click()">Select CSV File</button>
+    <input type="file" id="fileInput" accept=".csv,text/csv">
+  </div>
+
+  <div class="status-bar" id="statusBar">
+    <div class="stat-pill">Total rows: <strong id="sTotal">—</strong></div>
+    <div class="stat-pill">49-ball draws: <strong id="sFiltered">—</strong></div>
+    <div class="stat-pill">Date range: <strong id="sRange">—</strong></div>
+    <div class="stat-pill">Snowball draws: <strong id="sSnow">—</strong></div>
+    <button class="btn btn-secondary" onclick="resetApp()" style="margin-left:auto;margin-top:0;padding:6px 14px;font-size:0.8rem;">Reset</button>
+  </div>
+
+  <div id="loading" class="loading" style="display:none;">
+    <div class="spinner"></div>
+    <p>Parsing &amp; computing analytics…</p>
+  </div>
+
+  <div id="dashboard" style="display:none;">
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-panel="overview">Overview</button>
+      <button class="tab" data-panel="frequency">Number Frequency</button>
+      <button class="tab" data-panel="patterns">Patterns &amp; Distributions</button>
+      <button class="tab" data-panel="correlation">Correlation &amp; Pairs</button>
+      <button class="tab" data-panel="trends">Trends Over Time</button>
+      <button class="tab" data-panel="sales">Sales &amp; Jackpots</button>
+      <button class="tab" data-panel="insights">Key Insights</button>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div class="panel active" id="panel-overview">
+      <div class="grid grid-4" id="kpiGrid"></div>
+      <div class="section-title">Recent Draws (Latest 15)</div>
+      <div class="card">
+        <div class="table-scroll">
+          <table id="recentTable">
+            <thead>
+              <tr>
+                <th>Draw ID</th><th>Date</th><th>Type</th><th>Numbers</th><th>Extra</th><th>Sales (HKD)</th><th>Jackpot</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- FREQUENCY -->
+    <div class="panel" id="panel-frequency">
+      <div class="grid grid-2">
+        <div class="card">
+          <h3><span class="icon">📊</span> Main Number Frequency (1–49)</h3>
+          <div class="chart-wrap tall"><canvas id="freqChart"></canvas></div>
+        </div>
+        <div class="card">
+          <h3><span class="icon">🔥</span> Hot &amp; Cold Numbers</h3>
+          <div id="hotCold"></div>
+        </div>
+      </div>
+      <div class="grid grid-2" style="margin-top:20px;">
+        <div class="card">
+          <h3><span class="icon">🎯</span> Extra Ball Frequency</h3>
+          <div class="chart-wrap"><canvas id="extraChart"></canvas></div>
+        </div>
+        <div class="card">
+          <h3><span class="icon">🎨</span> Colour Distribution (Red / Blue / Green)</h3>
+          <div class="chart-wrap short"><canvas id="colourChart"></canvas></div>
+          <p style="font-size:0.8rem;color:var(--muted);margin-top:8px;">Baseline: Red 17 balls (34.7%), Blue 16 (32.7%), Green 16 (32.7%). Extra ball excluded.</p>
+        </div>
+      </div>
+      <div class="card" style="margin-top:20px;">
+        <h3>Full Frequency Table</h3>
+        <div class="table-scroll">
+          <table id="freqTable">
+            <thead>
+              <tr><th>Number</th><th>Hits</th><th>Frequency %</th><th>Expected %</th><th>Deviation</th><th>Last Drawn</th><th>Gap (draws)</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PATTERNS -->
+    <div class="panel" id="panel-patterns">
+      <div class="grid grid-2">
+        <div class="card">
+          <h3><span class="icon">⚖️</span> Odd / Even Distribution</h3>
+          <div class="chart-wrap short"><canvas id="oddEvenChart"></canvas></div>
+        </div>
+        <div class="card">
+          <h3><span class="icon">↕️</span> High / Low (1–24 vs 25–49)</h3>
+          <div class="chart-wrap short"><canvas id="highLowChart"></canvas></div>
+        </div>
+      </div>
+      <div class="grid grid-2" style="margin-top:20px;">
+        <div class="card">
+          <h3><span class="icon">∑</span> Sum of Main Numbers Distribution</h3>
+          <div class="chart-wrap"><canvas id="sumChart"></canvas></div>
+        </div>
+        <div class="card">
+          <h3><span class="icon">🔗</span> Consecutive Numbers per Draw</h3>
+          <div class="chart-wrap short"><canvas id="consecChart"></canvas></div>
+        </div>
+      </div>
+      <div class="grid grid-2" style="margin-top:20px;">
+        <div class="card">
+          <h3><span class="icon">📅</span> Day-of-Week Patterns</h3>
+          <div class="chart-wrap short"><canvas id="dowChart"></canvas></div>
+        </div>
+        <div class="card">
+          <h3><span class="icon">🎲</span> Decade Group Distribution</h3>
+          <div class="chart-wrap short"><canvas id="decadeChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CORRELATION -->
+    <div class="panel" id="panel-correlation">
+      <div class="card">
+        <h3><span class="icon">🔗</span> Most Frequent Pairs (Main Numbers)</h3>
+        <p style="font-size:0.85rem;color:var(--muted);margin-bottom:12px;">Top co-occurring pairs across all 49-ball draws. Expected pair rate under pure randomness ≈ 6×5 / (49×48) ≈ 1.28%.</p>
+        <div class="table-scroll">
+          <table id="pairTable">
+            <thead><tr><th>Rank</th><th>Pair</th><th>Co-occurrences</th><th>Rate %</th><th>Lift vs Random</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="grid grid-2" style="margin-top:20px;">
+        <div class="card">
+          <h3><span class="icon">📉</span> Least Frequent Pairs</h3>
+          <div class="table-scroll" style="max-height:300px;">
+            <table id="rarePairTable">
+              <thead><tr><th>Pair</th><th>Co-occurrences</th><th>Rate %</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <h3><span class="icon">🎯</span> Number ↔ Extra Ball Association (Top)</h3>
+          <div class="table-scroll" style="max-height:300px;">
+            <table id="extraAssocTable">
+              <thead><tr><th>Main</th><th>Extra</th><th>Count</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRENDS -->
+    <div class="panel" id="panel-trends">
+      <div class="card">
+        <h3><span class="icon">📈</span> Rolling Frequency – Selected Numbers (50-draw window)</h3>
+        <div class="filter-row">
+          <label>Track numbers:</label>
+          <select id="trendSelect" multiple size="4" style="min-width:160px;"></select>
+          <button class="btn" style="margin-top:0;padding:6px 14px;" onclick="updateTrendChart()">Update</button>
+        </div>
+        <div class="chart-wrap tall"><canvas id="trendChart"></canvas></div>
+      </div>
+      <div class="grid grid-2" style="margin-top:20px;">
+        <div class="card">
+          <h3><span class="icon">📊</span> Draws per Year</h3>
+          <div class="chart-wrap"><canvas id="yearChart"></canvas></div>
+        </div>
+        <div class="card">
+          <h3><span class="icon">❄️</span> Average Gap (draws since last appearance)</h3>
+          <div class="chart-wrap"><canvas id="gapChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SALES -->
+    <div class="panel" id="panel-sales">
+      <div class="grid grid-2">
+        <div class="card">
+          <h3><span class="icon">💰</span> Total Sales Over Time</h3>
+          <div class="chart-wrap"><canvas id="salesChart"></canvas></div>
+        </div>
+        <div class="card">
+          <h3><span class="icon">🏆</span> Jackpot Amount Distribution</h3>
+          <div class="chart-wrap"><canvas id="jackpotChart"></canvas></div>
+        </div>
+      </div>
+      <div class="grid grid-2" style="margin-top:20px;">
+        <div class="card">
+          <h3><span class="icon">❄️ vs 🔥</span> Regular vs Snowball Sales</h3>
+          <div class="chart-wrap short"><canvas id="snowSalesChart"></canvas></div>
+        </div>
+        <div class="card">
+          <h3><span class="icon">📅</span> Average Sales by Day of Week</h3>
+          <div class="chart-wrap short"><canvas id="salesDowChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INSIGHTS -->
+    <div class="panel" id="panel-insights">
+      <div class="card" id="insightsContent"></div>
+    </div>
+  </div>
+
+  <footer>
+    Mark Six Professional Analysis Dashboard · Analysis limited to post-July 2002 (6-from-49) draws · All computation runs locally in your browser · No data leaves your device
+  </footer>
+</div>
+
+<script>
+/* ========== Constants & Helpers ========== */
+const COLOUR = n => {
+  if (n <= 10 || (n >= 30 && n <= 39)) return 'red';
+  if ((n >= 11 && n <= 20) || (n >= 40 && n <= 49)) return 'blue';
+  return 'green'; // 21-29
+};
+const COLOUR_CLASS = { red: 'ball-red', blue: 'ball-blue', green: 'ball-green' };
+const EXPECTED_FREQ = 6 / 49; // ≈ 0.12245
+const CUTOFF = new Date('2002-07-01T00:00:00+08:00');
+
+function parseDate(s) {
+  if (!s) return null;
+  // handles "2026-09-26+08:00" or "2026-09-26"
+  const clean = String(s).replace(/\+.*/, '').trim();
+  const d = new Date(clean + 'T00:00:00+08:00');
+  return isNaN(d) ? null : d;
+}
+function fmtNum(n) {
+  if (n == null || isNaN(n)) return '—';
+  return Number(n).toLocaleString('en-HK');
+}
+function fmtDate(d) {
+  if (!d) return '—';
+  return d.toISOString().slice(0, 10);
+}
+function ballHtml(n, isExtra = false) {
+  if (n == null || n === '') return '';
+  const c = isExtra ? 'ball-extra' : COLOUR_CLASS[COLOUR(n)];
+  return `<span class="num-ball ${c}">${n}</span>`;
+}
+
+/* ========== State ========== */
+let rawRows = [];
+let draws = []; // filtered 49-ball
+let charts = {};
+
+/* ========== Upload ========== */
+const zone = document.getElementById('uploadZone');
+const fileInput = document.getElementById('fileInput');
+
+zone.addEventListener('click', () => fileInput.click());
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+zone.addEventListener('drop', e => {
+  e.preventDefault();
+  zone.classList.remove('dragover');
+  if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', () => { if (fileInput.files.length) handleFile(fileInput.files[0]); });
+
+function handleFile(file) {
+  if (!file.name.toLowerCase().endsWith('.csv')) {
+    alert('Please upload a .csv file.');
+    return;
+  }
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('dashboard').style.display = 'none';
+  zone.style.display = 'none';
+
+  Papa.parse(file, {
+    header: true,
+    dynamicTyping: true,
+    skipEmptyLines: true,
+    complete: res => {
+      try {
+        processData(res.data);
+      } catch (err) {
+        console.error(err);
+        alert('Error processing CSV: ' + err.message);
+        resetApp();
+      }
+      document.getElementById('loading').style.display = 'none';
+    },
+    error: err => {
+      alert('Parse error: ' + err.message);
+      resetApp();
+    }
+  });
+}
+
+function resetApp() {
+  rawRows = []; draws = [];
+  Object.values(charts).forEach(c => c.destroy());
+  charts = {};
+  document.getElementById('uploadZone').style.display = 'block';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('statusBar').classList.remove('show');
+  document.getElementById('loading').style.display = 'none';
+  fileInput.value = '';
+}
+
+/* ========== Core Processing ========== */
+function processData(rows) {
+  rawRows = rows;
+  const needed = ['draw_date', 'ball_1', 'ball_2', 'ball_3', 'ball_4', 'ball_5', 'ball_6'];
+  const sample = rows[0] || {};
+  const missing = needed.filter(k => !(k in sample));
+  if (missing.length) {
+    throw new Error('Missing required columns: ' + missing.join(', '));
+  }
+
+  draws = rows
+    .map(r => {
+      const d = parseDate(r.draw_date);
+      const balls = [r.ball_1, r.ball_2, r.ball_3, r.ball_4, r.ball_5, r.ball_6]
+        .map(Number).filter(n => !isNaN(n) && n >= 1 && n <= 49);
+      if (balls.length !== 6 || !d) return null;
+      balls.sort((a, b) => a - b);
+      return {
+        id: r.draw_id || r.draw_record_id || '',
+        date: d,
+        year: d.getFullYear(),
+        month: d.getMonth() + 1,
+        dow: d.getDay(), // 0=Sun
+        dayName: r.draw_day_name || ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d.getDay()],
+        balls,
+        extra: r.extra_ball != null && r.extra_ball !== '' ? Number(r.extra_ball) : null,
+        sales: r.total_sales != null ? Number(r.total_sales) : null,
+        jackpot: r.jackpot_amount != null ? Number(r.jackpot_amount) : null,
+        firstPrize: r.first_prize_dividend != null ? Number(r.first_prize_dividend) : null,
+        isSnow: r.is_snowball_draw == 1 || r.is_snowball_draw === true || (r.draw_type_name || '').toLowerCase().includes('snowball'),
+        snowName: r.snowball_name_en || '',
+        type: r.draw_type_name || (r.is_snowball_draw ? 'Snowball' : 'Regular')
+      };
+    })
+    .filter(r => r && r.date >= CUTOFF)
+    .sort((a, b) => b.date - a.date); // newest first
+
+  if (draws.length < 50) {
+    throw new Error('Fewer than 50 valid 49-ball draws found. Check the file format and date coverage.');
+  }
+
+  // Status
+  document.getElementById('sTotal').textContent = fmtNum(rawRows.length);
+  document.getElementById('sFiltered').textContent = fmtNum(draws.length);
+  const oldest = draws[draws.length - 1].date;
+  const newest = draws[0].date;
+  document.getElementById('sRange').textContent = `${fmtDate(oldest)} → ${fmtDate(newest)}`;
+  document.getElementById('sSnow').textContent = fmtNum(draws.filter(d => d.isSnow).length);
+  document.getElementById('statusBar').classList.add('show');
+  document.getElementById('dashboard').style.display = 'block';
+
+  buildOverview();
+  buildFrequency();
+  buildPatterns();
+  buildCorrelation();
+  buildTrends();
+  buildSales();
+  buildInsights();
+}
+
+/* ========== Tabs ========== */
+document.getElementById('tabs').addEventListener('click', e => {
+  if (!e.target.classList.contains('tab')) return;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  e.target.classList.add('active');
+  document.getElementById('panel-' + e.target.dataset.panel).classList.add('active');
+});
+
+/* ========== Overview ========== */
+function buildOverview() {
+  const n = draws.length;
+  const snow = draws.filter(d => d.isSnow).length;
+  const sales = draws.filter(d => d.sales).map(d => d.sales);
+  const avgSales = sales.length ? sales.reduce((a, b) => a + b, 0) / sales.length : 0;
+  const maxJack = Math.max(...draws.map(d => d.jackpot || 0));
+  const allBalls = draws.flatMap(d => d.balls);
+  const unique = new Set(allBalls).size;
+
+  document.getElementById('kpiGrid').innerHTML = `
+    <div class="card kpi"><div class="value">${fmtNum(n)}</div><div class="label">49-Ball Draws Analysed</div></div>
+    <div class="card kpi"><div class="value">${fmtNum(snow)}</div><div class="label">Snowball Draws</div></div>
+    <div class="card kpi"><div class="value">${fmtNum(Math.round(avgSales))}</div><div class="label">Avg Total Sales (HKD)</div></div>
+    <div class="card kpi"><div class="value">${fmtNum(maxJack)}</div><div class="label">Highest Jackpot Recorded</div></div>
+  `;
+
+  const tbody = document.querySelector('#recentTable tbody');
+  tbody.innerHTML = draws.slice(0, 15).map(d => `
+    <tr>
+      <td>${d.id}</td>
+      <td>${fmtDate(d.date)}</td>
+      <td>${d.isSnow ? '❄️ ' + (d.snowName || 'Snowball') : 'Regular'}</td>
+      <td>${d.balls.map(b => ballHtml(b)).join('')}</td>
+      <td>${d.extra != null ? ballHtml(d.extra, true) : '—'}</td>
+      <td>${fmtNum(d.sales)}</td>
+      <td>${fmtNum(d.jackpot)}</td>
+    </tr>
+  `).join('');
+}
+
+/* ========== Frequency ========== */
+function buildFrequency() {
+  const freq = Array(50).fill(0);
+  const lastSeen = Array(50).fill(null);
+  const extraFreq = Array(50).fill(0);
+  const colourCount = { red: 0, blue: 0, green: 0 };
+
+  draws.forEach((d, idx) => {
+    d.balls.forEach(b => {
+      freq[b]++;
+      if (lastSeen[b] === null) lastSeen[b] = idx; // newest first → first encounter = most recent
+      colourCount[COLOUR(b)]++;
+    });
+    if (d.extra != null && d.extra >= 1 && d.extra <= 49) extraFreq[d.extra]++;
+  });
+
+  // Chart – main frequency
+  const labels = Array.from({ length: 49 }, (_, i) => i + 1);
+  const data = labels.map(n => freq[n]);
+  const bg = labels.map(n => {
+    const c = COLOUR(n);
+    return c === 'red' ? 'rgba(248,113,113,0.75)' : c === 'blue' ? 'rgba(96,165,250,0.75)' : 'rgba(74,222,128,0.75)';
+  });
+
+  if (charts.freq) charts.freq.destroy();
+  charts.freq = new Chart(document.getElementById('freqChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Hits',
+        data,
+        backgroundColor: bg,
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { afterLabel: ctx => {
+          const exp = draws.length * EXPECTED_FREQ;
+          return `Expected ≈ ${exp.toFixed(1)} | Δ ${(ctx.raw - exp).toFixed(1)}`;
+        }}}
+      },
+      scales: {
+        x: { ticks: { color: '#8b9cb3', maxRotation: 0, font: { size: 9 } }, grid: { display: false } },
+        y: { ticks: { color: '#8b9cb3' }, grid: { color: 'rgba(45,58,79,0.5)' } }
+      }
+    }
+  });
+
+  // Hot / Cold
+  const ranked = labels.map(n => ({ n, hits: freq[n], gap: lastSeen[n] ?? draws.length }))
+    .sort((a, b) => b.hits - a.hits);
+  const hot = ranked.slice(0, 10);
+  const cold = [...ranked].sort((a, b) => a.hits - b.hits).slice(0, 10);
+
+  document.getElementById('hotCold').innerHTML = `
+    <div style="margin-bottom:16px;">
+      <strong style="color:#f87171;">Hottest (most drawn)</strong>
+      <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;">
+        ${hot.map((x,i) => `<span style="background:var(--surface2);padding:6px 10px;border-radius:8px;font-size:0.85rem;">#${i+1} ${ballHtml(x.n)} <strong>${x.hits}</strong></span>`).join('')}
+      </div>
+    </div>
+    <div>
+      <strong style="color:#60a5fa;">Coldest (least drawn)</strong>
+      <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;">
+        ${cold.map((x,i) => `<span style="background:var(--surface2);padding:6px 10px;border-radius:8px;font-size:0.85rem;">#${i+1} ${ballHtml(x.n)} <strong>${x.hits}</strong></span>`).join('')}
+      </div>
+    </div>
+    <div class="insight info" style="margin-top:16px;">
+      Under a fair 6/49 model each number is expected ≈ ${(draws.length * EXPECTED_FREQ).toFixed(1)} times.
+      Observed range: ${Math.min(...data)} – ${Math.max(...data)}. Chi-square uniformity test can be used to assess deviation (see Insights).
+    </div>
+  `;
+
+  // Extra ball chart
+  if (charts.extra) charts.extra.destroy();
+  charts.extra = new Chart(document.getElementById('extraChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Extra ball hits',
+        data: labels.map(n => extraFreq[n]),
+        backgroundColor: 'rgba(251,191,36,0.7)'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#8b9cb3', font: { size: 9 } }, grid: { display: false } },
+        y: { ticks: { color: '#8b9cb3' }, grid: { color: 'rgba(45,58,79,0.5)' } }
+      }
+    }
+  });
+
+  // Colour
+  const totalColour = colourCount.red + colourCount.blue + colourCount.green;
+  if (charts.colour) charts.colour.destroy();
+  charts.colour = new Chart(document.getElementById('colourChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Red (1-10,30-39)', 'Blue (11-20,40-49)', 'Green (21-29)'],
+      datasets: [{
+        data: [colourCount.red, colourCount.blue, colourCount.green],
+        backgroundColor: ['#f87171', '#60a5fa', '#4ade80'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { color: '#e7ecf3', padding: 16 } },
+        tooltip: { callbacks: { label: ctx => {
+          const pct = (ctx.raw / totalColour * 100).toFixed(1);
+          return `${ctx.label}: ${ctx.raw} (${pct}%)`;
+        }}}
+      }
+    }
+  });
+
+  // Frequency table
+  const tbody = document.querySelector('#freqTable tbody');
+  tbody.innerHTML = ranked.map(x => {
+    const pct = (x.hits / draws.length * 100).toFixed(2);
+    const expPct = (EXPECTED_FREQ * 100).toFixed(2);
+    const dev = (x.hits / draws.length - EXPECTED_FREQ) * 100;
+    const lastDate = lastSeen[x.n] != null ? fmtDate(draws[lastSeen[x.n]].date) : '—';
+    return `<tr>
+      <td>${ballHtml(x.n)} ${x.n}</td>
+      <td>${x.hits}</td>
+      <td>${pct}%</td>
+      <td>${expPct}%</td>
+      <td style="color:${dev > 0.5 ? '#4ade80' : dev < -0.5 ? '#f87171' : 'inherit'}">${dev > 0 ? '+' : ''}${dev.toFixed(2)} pp</td>
+      <td>${lastDate}</td>
+      <td>${x.gap}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ========== Patterns ========== */
+function buildPatterns() {
+  // Odd/Even
+  const oe = {};
+  draws.forEach(d => {
+    const odds = d.balls.filter(b => b % 2 === 1).length;
+    const key = `${odds} odd / ${6 - odds} even`;
+    oe[key] = (oe[key] || 0) + 1;
+  });
+  const oeLabels = ['0 odd / 6 even','1 odd / 5 even','2 odd / 4 even','3 odd / 3 even','4 odd / 2 even','5 odd / 1 even','6 odd / 0 even'];
+  if (charts.oe) charts.oe.destroy();
+  charts.oe = new Chart(document.getElementById('oddEvenChart'), {
+    type: 'bar',
+    data: {
+      labels: oeLabels,
+      datasets: [{
+        data: oeLabels.map(k => oe[k] || 0),
+        backgroundColor: 'rgba(139,92,246,0.7)'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#8b9cb3', font: { size: 10 } }, grid: { display: false } },
+        y: { ticks: { color: '#8b9cb3' }, grid: { color: 'rgba(45,58,79,0.5)' } }
+      }
+    }
+  });
+
+  // High / Low
+  const hl = {};
+  draws.forEach(d => {
+    const low = d.balls.filter(b => b <= 24).length;
+    const key = `${low} low / ${6 - low} high`;
+    hl[key] = (hl[key] || 0) + 1;
+  });
+  const hlLabels = ['0L/6H','1L/5H','2L/4H','3L/3H','4L/2H','5L/1H','6L/0H'];
+  if (charts.hl) charts.hl.destroy();
+  charts.hl = new Chart(document.getElementById('highLowChart'), {
+    type: 'bar',
+    data: {
+      labels: hlLabels,
+      datasets: [{
+        data: ['0 low / 6 high','1 low / 5 high','2 low / 4 high','3 low / 3 high','4 low / 2 high','5 low / 1 high','6 low / 0 high'].map(k => hl[k] || 0),
+        backgroundColor: 'rgba(6,182,212,0.7)'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#8b9cb3' }, grid: { display: false } },
+        y: { ticks: { color: '#8b9cb3' }, grid: { color: 'rgba(45,58,79,0.5)' } }
+      }
+    }
+  });
+
+  // Sum distribution
+  const sums = draws.map(d => d.balls.reduce((a, b) => a + b, 0));
+  const minS = Math.min(...sums), maxS = Math.max(...sums);
+  const binSize = 15;
+  const bins = {};
+  sums.forEach(s => {
+    const b = Math.floor((s - minS) / binSize) * binSize + minS;
+    bins[b] = (bins[b] || 0) + 1;
+  });
+  const sumLabels = Object.keys(bins).map(Number).sort((a, b) => a - b);
+  if (charts.sum) charts.sum.destroy();
+  charts.sum = new Chart(document.getElementById('sumChart'), {
+    type: 'bar',
+    data: {
+      labels: sumLabels.map(s => `${s}–${s + binSize - 1}`),
+      datasets: [{ data: sumLabels.map(s => bins[s]), backgroundColor: 'rgba(236,72,153,0.65)' }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+        title: { display: true, text: `Mean sum = ${(sums.reduce((a,b)=>a+b,0)/sums.length).toFixed(1)}  |  Theoretical mean ≈ 150`, color: '#8b9cb3', font: { size: 12 } }
+      },
+      scales: {
+        x: { ticks: { color: '#8b9cb3', maxRotation: 45, font: { size: 10 } }, grid: { display: false } },
+        y: { ticks: { color: '#8b9cb3' }, grid: { color: 'rgba(45,58,79,0.5)' } }
+      }
+    }
+  });
+
+  // Consecutive
+  const consecCounts = [0, 0, 0, 0, 0, 0]; // 0 to 5 consecutive pairs
+  draws.forEach(d => {
+    let c = 0;
+    for (let i = 1; i < 6; i++) if (d.balls[i] === d.balls[i - 1] + 1) c++;
+    consecCounts[Math.min(c, 5)]++;
+  });
+  if (charts.consec) charts.consec.destroy();
+  charts.consec = new Chart(document.getElementById('consecChart'), {
+    type: 'bar',
+    data: {
+      labels: ['0 pairs', '1 pair', '2 pairs', '3 pairs', '4 pairs', '5 pairs'],
+      datasets: [{ data: consecCounts, backgroundColor: 'rgba(245,158,11,0.7)' }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#8b9cb3' }, grid: { display: false } },
+        y: { ticks: { color: '#8b9cb3' }, grid: { color: 'rgba(45,58,79,0.5)' } }
+      }
+    }
+  });
+
+  // Day of week
+  const dowMap = { 0: 'Sun', 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat' };
+  const dowCount = { 0:0,1:0,2:0,3:0,4:0,5:0,6:0 };
+  draws.forEach(d => dowCount[d.dow]++);
+  if (charts.dow) charts.dow.destroy();
+  charts.dow = new Chart(document.getElementById('dowChart'), {
+    type: 'bar',
+    data: {
+      labels: [0,1,2,3,4,5,6].map(d => dowMap[d]),
+      datasets: [{ data: [0,1,2,3,4,5,6].map(d => dowCount[d]), backgroundColor: 'rgba(59,130,246,0.7)' }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#8b9cb3' }, grid: { display: false } },
+        y: { ticks: { color: '#8b9cb3' }, grid: { color: 'rgba(45,58,79,0.5)' } }
+      }
+    }
+  });
+
+  // Decade groups 1-10 … 41-49
+  const decades = [0,0,0,0,0];
+  draws.forEach(d => d.balls.forEach(b => {
+    if (b <= 10) decades[0]++;
+    else if (b <= 20) decades[1]++;
+    else if (b <= 30) decades[2]++;
+    else if (b <= 40) decades[3]++;
+    else decades[4]++;
+  }));
+  if (charts.decade) charts.decade.destroy();
+  charts.decade = new Chart(document.getElementById('decadeChart'), {
+    type: 'bar',
+    data: {
+      labels: ['1–10', '11–20', '21–30', '31–40', '41–49'],
+      datasets: [{
+        data: decades,
+        backgroundColor: ['#f87171','#60a5fa','#4ade80','#a78bfa','#fbbf24']
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#8b9cb3' }, grid: { display: false } },
+        y: { ticks: { color: '#8b9cb3' }, grid: { color: 'rgba(45,58,79,0.5)' } }
+      }
+    }
+  });
+}
+
+/* ========== Correlation ========== */
+function buildCorrelation() {
+  const pairCount = {};
+  const extraAssoc = {};
+  draws.forEach(d => {
+    for (let i = 0; i < 6; i++) {
+      for (let j = i + 1; j < 6; j++) {
+        const a = Math.min(d.balls[i], d.balls[j]);
+        const b = Math.max(d.balls[i], d.balls[j]);
+        const key = `${a}-${b}`;
+        pairCount[key] = (pairCount[key] || 0) + 1;
+      }
+      if (d.extra != null) {
+        const k = `${d.balls[i]}|${d.extra}`;
+        extraAssoc[k] = (extraAssoc[k] || 0) + 1;
+      }
+    }
+  });
+
+  const expectedPairRate = (6 * 5) / (49 * 48); // ≈ 0.012755
+  const pairs = Object.entries(pairCount)
+    .map(([k, c]) => {
+      const [a, b] = k.split('-').map(Number);
+      return { a, b, c, rate: c / draws.length, lift: (c / draws.length) / expectedPairRate };
+    })
+    .sort((x, y) => y.c - x.c);
+
+  const tbody = document.querySelector('#pairTable tbody');
+  tbody.innerHTML = pairs.slice(0, 30).map((p, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td>${ballHtml(p.a)} ${ballHtml(p.b)}</td>
+      <td>${p.c}</td>
+      <td>${(p.rate * 100).toFixed(2)}%</td>
+      <td style="color:${p.lift > 1.15 ? '#4ade80' : p.lift < 0.85 ? '#f87171' : 'inherit'}">${p.lift.toFixed(2)}×</td>
+    </tr>
+  `).join('');
+
+  const rareBody = document.querySelector('#rarePairTable tbody');
+  rareBody.innerHTML = pairs.slice(-20).reverse().map(p => `
+    <tr>
+      <td>${ballHtml(p.a)} ${ballHtml(p.b)}</td>
+      <td>${p.c}</td>
+      <td>${(p.rate * 100).toFixed(2)}%</td>
+    </tr>
+  `).join('');
+
+  const ea = Object.entries(extraAssoc)
+    .map(([k, c]) => { const [m, e] = k.split('|').map(Number); return { m, e, c }; })
+    .sort((a, b) => b.c - a.c)
+    .slice(0, 25);
+  document.querySelector('#extraAssocTable tbody').innerHTML = ea.map(x => `
+    <tr><td>${ballHtml(x.m)}</td><td>${ballHtml(x.e, true)}</td><td>${x.c}</td></tr>
+  `).join('');
+}
+
+/* ========== Trends ========== */
+function buildTrends() {
+  // Year counts
+  const yearMap = {};
+  draws.forEach(d => { yearMap[d.year] = (yearMap[d.year] || 0) + 1; });
+  const years = Object.keys(yearMap).map(Number).sort((a, b) => a - b);
+  if (charts.year) charts.year.destroy();
+  charts.year = new Chart(document.getElementById('yearChart'), {
+    type: 'line',
+    data: {
+      labels: years,
+      datasets: [{
+        label: 'Draws',
+        data: years.map(y => yearMap[y]),
+        borderColor: '#3b82f6',
+        backgroundColor: 'rgba(59,130,246,0.15)',
+        fill: true,
+        tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#8b9cb3' }, grid: { display: false } },
+        y: { ticks: { color: '#8b9cb3' }, grid: { color: 'rgba(45,58,79,0.5)' } }
+      }
+    }
+  });
+
+  // Average gap
+  const lastIdx = Array(50).fill(-1);
+  const gaps = Array(50).fill(null).map(() => []);
+  // process oldest → newest for gap calculation
+  const chrono = [...draws].reverse();
+  chrono.forEach((d, i) => {
+    d.balls.forEach(b => {
+      if (lastIdx[b] >= 0) gaps[b].push(i - lastIdx[b]);
+      lastIdx[b] = i;
+    });
+  });
+  const avgGap = Array.from({ length: 49 }, (_, i) => {
+    const g = gaps[i + 1];
+    return g.length ? g.reduce((a, b) => a + b, 0) / g.length : 0;
+  });
+  if (charts.gap) charts.gap.destroy();
+  charts.gap = new Chart(document.getElementById('gapChart'), {
+    type: 'bar',
+    data: {
+      labels: Array.from({ length: 49 }, (_, i) => i + 1),
+      datasets: [{
+        label: 'Avg gap (draws)',
+        data: avgGap,
+        backgroundColor: 'rgba(16,185,129,0.65)'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#8b9cb3', font: { size: 9 } }, grid: { display: false } },
+        y: { ticks: { color: '#8b9cb3' }, grid: { color: 'rgba(45,58,79,0.5)' },
+             title: { display: true, text: 'Expected gap ≈ 49/6 ≈ 8.17', color: '#8b9cb3', font: { size: 11 } } }
+      }
+    }
+  });
+
+  // Trend select
+  const sel = document.getElementById('trendSelect');
+  sel.innerHTML = Array.from({ length: 49 }, (_, i) => `<option value="${i+1}">${i+1}</option>`).join('');
+  // preselect top 5 hot
+  const freq = Array(50).fill(0);
+  draws.forEach(d => d.balls.forEach(b => freq[b]++));
+  const top5 = Array.from({ length: 49 }, (_, i) => i + 1).sort((a, b) => freq[b] - freq[a]).slice(0, 5);
+  top5.forEach(n => { sel.querySelector(`option[value="${n}"]`).selected = true; });
+  updateTrendChart();
+}
+
+function updateTrendChart() {
+  const sel = document.getElementById('trendSelect');
+  const selected = Array.from(sel.selectedOptions).map(o => Number(o.value)).slice(0, 8);
+  if (!selected.length) return;
+
+  const window = 50;
+  const chrono = [...draws].reverse(); // oldest first
+  const series = {};
+  selected.forEach(n => { series[n] = []; });
+
+  for (let i = 0; i < chrono.length; i++) {
+    selected.forEach(n => {
+      let hits = 0;
+      const start = Math.max(0, i - window + 1);
+      for (let j = start; j <= i; j++) {
+        if (chrono[j].balls.includes(n)) hits++;
+      }
+      series[n].push(hits);
+    });
+  }
+
+  const colours = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899','#84cc16'];
+  if (charts.trend) charts.trend.destroy();
+  charts.trend = new Chart(document.getElementById('trendChart'), {
+    type: 'line',
+    data: {
+      labels: chrono.map((d, i) => i % 20 === 0 ? fmtDate(d.date) : ''),
+      datasets: selected.map((n, idx) => ({
+        label: `No. ${n}`,
+        data: series[n],
+        borderColor: colours[idx % colours.length],
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        pointRadius: 0,
+        tension: 0.2
+      }))
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#e7ecf3' } },
+        title: { display: true, text: `Hits in rolling ${window}-draw window`, color: '#8b9cb3', font: { size: 12 } }
+      },
+      scales: {
+        x: { ticks: { color: '#8b9cb3', maxTicksLimit: 12 }, grid: { display: false } },
+        y: { ticks: { color: '#8b9cb3' }, grid: { color: 'rgba(45,58,79,0.5)' } }
+      }
+    }
+  });
+}
+
+/* ========== Sales ========== */
+function buildSales() {
+  const withSales = draws.filter(d => d.sales != null && d.sales > 0).reverse();
+  if (charts.sales) charts.sales.destroy();
+  charts.sales = new Chart(document.getElementById('salesChart'), {
+    type: 'line',
+    data: {
+      labels: withSales.map((d, i) => i % 30 === 0 ? fmtDate(d.date) : ''),
+      datasets: [{
+        label: 'Total Sales (HKD)',
+        data: withSales.map(d => d.sales),
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16,185,129,0.1)',
+        fill: true,
+        pointRadius: 0,
+        borderWidth: 1.5,
+        tension: 0.1
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#8b9cb3', maxTicksLimit: 10 }, grid: { display: false } },
+        y: { ticks: { color: '#8b9cb3', callback: v => (v/1e6).toFixed(0) + 'M' }, grid: { color: 'rgba(45,58,79,0.5)' } }
+      }
+    }
+  });
+
+  // Jackpot histogram
+  const jacks = draws.filter(d => d.jackpot != null && d.jackpot > 0).map(d => d.jackpot);
+  const jBins = {};
+  jacks.forEach(j => {
+    const b = Math.floor(j / 5e6) * 5e6;
+    jBins[b] = (jBins[b] || 0) + 1;
+  });
+  const jLabels = Object.keys(jBins).map(Number).sort((a, b) => a - b);
+  if (charts.jack) charts.jack.destroy();
+  charts.jack = new Chart(document.getElementById('jackpotChart'), {
+    type: 'bar',
+    data: {
+      labels: jLabels.map(v => (v / 1e6).toFixed(0) + 'M+'),
+      datasets: [{ data: jLabels.map(v => jBins[v]), backgroundColor: 'rgba(245,158,11,0.7)' }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#8b9cb3', maxRotation: 45, font: { size: 10 } }, grid: { display: false } },
+        y: { ticks: { color: '#8b9cb3' }, grid: { color: 'rgba(45,58,79,0.5)' } }
+      }
+    }
+  });
+
+  // Snow vs Regular avg sales
+  const regSales = draws.filter(d => !d.isSnow && d.sales).map(d => d.sales);
+  const snowSales = draws.filter(d => d.isSnow && d.sales).map(d => d.sales);
+  const avg = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+  if (charts.snowSales) charts.snowSales.destroy();
+  charts.snowSales = new Chart(document.getElementById('snowSalesChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Regular Draws', 'Snowball Draws'],
+      datasets: [{
+        data: [avg(regSales), avg(snowSales)],
+        backgroundColor: ['rgba(59,130,246,0.7)', 'rgba(236,72,153,0.7)']
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => 'Avg sales: HK$ ' + fmtNum(Math.round(ctx.raw)) } }
+      },
+      scales: {
+        x: { ticks: { color: '#8b9cb3' }, grid: { display: false } },
+        y: { ticks: { color: '#8b9cb3', callback: v => (v/1e6).toFixed(0) + 'M' }, grid: { color: 'rgba(45,58,79,0.5)' } }
+      }
+    }
+  });
+
+  // Sales by DOW
+  const dowSales = { 0:[],1:[],2:[],3:[],4:[],5:[],6:[] };
+  draws.forEach(d => { if (d.sales) dowSales[d.dow].push(d.sales); });
+  const dowMap = { 0:'Sun',1:'Mon',2:'Tue',3:'Wed',4:'Thu',5:'Fri',6:'Sat' };
+  if (charts.salesDow) charts.salesDow.destroy();
+  charts.salesDow = new Chart(document.getElementById('salesDowChart'), {
+    type: 'bar',
+    data: {
+      labels: [0,1,2,3,4,5,6].map(d => dowMap[d]),
+      datasets: [{
+        data: [0,1,2,3,4,5,6].map(d => avg(dowSales[d])),
+        backgroundColor: 'rgba(139,92,246,0.7)'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#8b9cb3' }, grid: { display: false } },
+        y: { ticks: { color: '#8b9cb3', callback: v => (v/1e6).toFixed(0) + 'M' }, grid: { color: 'rgba(45,58,79,0.5)' } }
+      }
+    }
+  });
+}
+
+/* ========== Insights ========== */
+function buildInsights() {
+  const n = draws.length;
+  const freq = Array(50).fill(0);
+  draws.forEach(d => d.balls.forEach(b => freq[b]++));
+  const hits = freq.slice(1);
+  const mean = hits.reduce((a, b) => a + b, 0) / 49;
+  const variance = hits.reduce((a, b) => a + (b - mean) ** 2, 0) / 49;
+  const chi2 = hits.reduce((a, b) => a + (b - mean) ** 2 / mean, 0);
+  // chi2 critical value for df=48, α=0.05 ≈ 65.17; α=0.01 ≈ 73.68 (approx)
+  const uniform = chi2 < 65.2;
+
+  const sums = draws.map(d => d.balls.reduce((a, b) => a + b, 0));
+  const meanSum = sums.reduce((a, b) => a + b, 0) / n;
+  const theoSum = 6 * 25; // average of 1..49 is 25
+
+  const oddCounts = draws.map(d => d.balls.filter(b => b % 2).length);
+  const meanOdd = oddCounts.reduce((a, b) => a + b, 0) / n;
+
+  const consecRate = draws.filter(d => {
+    for (let i = 1; i < 6; i++) if (d.balls[i] === d.balls[i-1] + 1) return true;
+    return false;
+  }).length / n;
+
+  const snow = draws.filter(d => d.isSnow);
+  const reg = draws.filter(d => !d.isSnow);
+  const avgSnowSales = snow.filter(d => d.sales).reduce((a, d) => a + d.sales, 0) / (snow.filter(d => d.sales).length || 1);
+  const avgRegSales = reg.filter(d => d.sales).reduce((a, d) => a + d.sales, 0) / (reg.filter(d => d.sales).length || 1);
+
+  const ranked = hits.map((h, i) => ({ n: i + 1, h })).sort((a, b) => b.h - a.h);
+  const hottest = ranked.slice(0, 5).map(x => x.n).join(', ');
+  const coldest = ranked.slice(-5).map(x => x.n).join(', ');
+
+  // Simple serial correlation proxy: consecutive draw overlap
+  let overlapSum = 0;
+  for (let i = 0; i < draws.length - 1; i++) {
+    const set = new Set(draws[i].balls);
+    overlapSum += draws[i + 1].balls.filter(b => set.has(b)).length;
+  }
+  const avgOverlap = overlapSum / (draws.length - 1);
+  // Expected overlap under independence ≈ 6 * 6 / 49 ≈ 0.735
+
+  document.getElementById('insightsContent').innerHTML = `
+    <h3 style="margin-bottom:16px;">Executive Summary – 49-Ball Era (${fmtDate(draws[draws.length-1].date)} → ${fmtDate(draws[0].date)})</h3>
+
+    <div class="insight">
+      <strong>Sample size & scope</strong><br>
+      ${fmtNum(n)} draws after the July 2002 expansion to 49 numbers. This is the statistically relevant population for modern Mark Six modelling. Pre-2002 data (different pool sizes) is excluded to avoid mixing heterogeneous generating processes.
+    </div>
+
+    <div class="insight ${uniform ? 'info' : 'warn'}">
+      <strong>Uniformity of main numbers</strong><br>
+      Chi-square statistic ≈ ${chi2.toFixed(1)} (df = 48). 
+      ${uniform
+        ? 'The observed frequencies are consistent with a uniform random draw at the 5% significance level. No strong evidence of long-run bias toward particular numbers.'
+        : 'The frequencies deviate from perfect uniformity at conventional significance levels. This can arise from finite-sample variation, machine changes, or genuine small biases; interpret with caution and prefer recent windows for short-term modelling.'}
+      Observed hit range: ${Math.min(...hits)} – ${Math.max(...hits)} (expected ≈ ${mean.toFixed(1)}).
+    </div>
+
+    <div class="insight info">
+      <strong>Hot / Cold snapshot</strong><br>
+      Most frequent: <strong>${hottest}</strong>. Least frequent: <strong>${coldest}</strong>.
+      “Hot” and “cold” labels are descriptive only. Under a fair lottery the expected waiting time for any specific number is geometric with success probability 6/49 ≈ 12.2% per draw; long gaps are normal.
+    </div>
+
+    <div class="insight">
+      <strong>Sum of main numbers</strong><br>
+      Mean sum = <strong>${meanSum.toFixed(1)}</strong> (theoretical mean under uniform sampling without replacement ≈ ${theoSum}).
+      The distribution is roughly unimodal and centred near the theoretical value, consistent with random selection.
+    </div>
+
+    <div class="insight">
+      <strong>Odd / Even balance</strong><br>
+      Average number of odd main balls per draw ≈ <strong>${meanOdd.toFixed(2)}</strong> (theoretical ≈ 3.06 given 25 odd / 24 even numbers).
+      The classic 3-odd / 3-even combination remains the modal outcome, as expected from the hypergeometric-like composition of the urn.
+    </div>
+
+    <div class="insight">
+      <strong>Consecutive numbers</strong><br>
+      Approximately <strong>${(consecRate * 100).toFixed(1)}%</strong> of draws contain at least one consecutive pair (e.g. 12-13). This is a common natural pattern and does not indicate dependence between successive draws.
+    </div>
+
+    <div class="insight">
+      <strong>Draw-to-draw overlap</strong><br>
+      Average number of shared main numbers between consecutive draws ≈ <strong>${avgOverlap.toFixed(2)}</strong>
+      (theoretical under independence ≈ 0.73). Values close to the theoretical expectation support the assumption that successive draws are effectively independent.
+    </div>
+
+    <div class="insight">
+      <strong>Snowball economics</strong><br>
+      Snowball draws (${snow.length} in sample) generate substantially higher turnover: average sales ≈ HK$ ${fmtNum(Math.round(avgSnowSales))} versus HK$ ${fmtNum(Math.round(avgRegSales))} for regular draws
+      (≈ ${(avgSnowSales / (avgRegSales || 1)).toFixed(1)}×). Large jackpots and marketing around festival / anniversary snowballs drive participation spikes.
+    </div>
+
+    <div class="insight warn">
+      <strong>Analytical caveats (professional notes)</strong><br>
+      • Lottery draws are designed to be i.i.d. uniform; any apparent “pattern” should be treated as sample noise unless it survives rigorous out-of-sample testing.<br>
+      • Machine changes (e.g. 4th → 5th generation around 2026) can theoretically alter microscopic physical biases; consider segmenting analysis if a new machine period is of interest.<br>
+      • Pair lift statistics and rolling windows are exploratory. They are useful for describing the realised sample but are weak predictors of future draws.<br>
+      • Sales and jackpot series are non-stationary (inflation, unit-bet changes, marketing). Use log-transforms or year-fixed effects for formal econometric work.
+    </div>
+
+    <div class="insight info">
+      <strong>Recommended next steps for deeper analysis</strong><br>
+      1. Segment by drawing machine generation if metadata becomes available.<br>
+      2. Formal runs tests / autocorrelation tests on the binary presence series of each number.<br>
+      3. Bootstrap confidence intervals for pair frequencies and colour shares.<br>
+      4. Time-series models of total_sales (ARIMA / regression with snowball dummies and day-of-week effects).<br>
+      5. Prize-tier winner counts (if available in an extended schema) for expected-value calculations.
+    </div>
+  `;
+}
+</script>
+</body>
+</html>
