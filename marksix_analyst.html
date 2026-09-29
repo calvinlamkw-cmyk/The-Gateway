@@ -314,6 +314,8 @@
     <p>Parsing &amp; computing analytics…</p>
   </div>
 
+  <div id="errorBox" class="card" style="display:none;border-color:var(--danger);background:rgba(239,68,68,0.08);margin-bottom:24px;color:#fecaca;"></div>
+
   <div id="dashboard" style="display:none;">
     <div class="tabs" id="tabs">
       <button class="tab active" data-panel="overview">Overview</button>
@@ -510,18 +512,25 @@
 const COLOUR = n => {
   if (n <= 10 || (n >= 30 && n <= 39)) return 'red';
   if ((n >= 11 && n <= 20) || (n >= 40 && n <= 49)) return 'blue';
-  return 'green'; // 21-29
+  return 'green';
 };
 const COLOUR_CLASS = { red: 'ball-red', blue: 'ball-blue', green: 'ball-green' };
-const EXPECTED_FREQ = 6 / 49; // ≈ 0.12245
-const CUTOFF = new Date('2002-07-01T00:00:00+08:00');
+const EXPECTED_FREQ = 6 / 49;
+const CUTOFF_YMD = 20020701; // July 2002 – 49-ball era
 
 function parseDate(s) {
-  if (!s) return null;
-  // handles "2026-09-26+08:00" or "2026-09-26"
-  const clean = String(s).replace(/\+.*/, '').trim();
-  const d = new Date(clean + 'T00:00:00+08:00');
-  return isNaN(d) ? null : d;
+  if (s == null || s === '') return null;
+  if (s instanceof Date && !isNaN(s.getTime())) return s;
+  const str = String(s).trim();
+  const m = str.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return null;
+  const y = +m[1], mo = +m[2], d = +m[3];
+  if (y < 1970 || y > 2100 || mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+  const dt = new Date(y, mo - 1, d, 12, 0, 0); // local noon avoids TZ edge cases
+  return isNaN(dt.getTime()) ? null : dt;
+}
+function dateToYMD(d) {
+  return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
 }
 function fmtNum(n) {
   if (n == null || isNaN(n)) return '—';
@@ -529,124 +538,214 @@ function fmtNum(n) {
 }
 function fmtDate(d) {
   if (!d) return '—';
-  return d.toISOString().slice(0, 10);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return y + '-' + m + '-' + day;
 }
-function ballHtml(n, isExtra = false) {
+function ballHtml(n, isExtra) {
   if (n == null || n === '') return '';
   const c = isExtra ? 'ball-extra' : COLOUR_CLASS[COLOUR(n)];
-  return `<span class="num-ball ${c}">${n}</span>`;
+  return '<span class="num-ball ' + c + '">' + n + '</span>';
+}
+function showError(msg) {
+  document.getElementById('loading').style.display = 'none';
+  const el = document.getElementById('errorBox');
+  if (el) {
+    el.style.display = 'block';
+    el.innerHTML = '<strong>Could not process file</strong><br><pre style="white-space:pre-wrap;margin:8px 0;font-size:0.85rem;">' +
+      String(msg).replace(/</g, '&lt;') +
+      '</pre><button class="btn btn-secondary" onclick="resetApp()" style="margin-top:8px;">Try again</button>';
+  } else {
+    alert(msg);
+  }
 }
 
 /* ========== State ========== */
 let rawRows = [];
-let draws = []; // filtered 49-ball
+let draws = [];
 let charts = {};
 
 /* ========== Upload ========== */
 const zone = document.getElementById('uploadZone');
 const fileInput = document.getElementById('fileInput');
 
-zone.addEventListener('click', () => fileInput.click());
-zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
-zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
-zone.addEventListener('drop', e => {
+zone.addEventListener('click', function (e) {
+  if (e.target.closest('button')) return; // button has its own onclick
+  fileInput.click();
+});
+zone.addEventListener('dragover', function (e) { e.preventDefault(); zone.classList.add('dragover'); });
+zone.addEventListener('dragleave', function () { zone.classList.remove('dragover'); });
+zone.addEventListener('drop', function (e) {
   e.preventDefault();
   zone.classList.remove('dragover');
   if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
 });
-fileInput.addEventListener('change', () => { if (fileInput.files.length) handleFile(fileInput.files[0]); });
+fileInput.addEventListener('change', function () {
+  if (fileInput.files && fileInput.files.length) handleFile(fileInput.files[0]);
+});
 
 function handleFile(file) {
-  if (!file.name.toLowerCase().endsWith('.csv')) {
-    alert('Please upload a .csv file.');
+  if (!file) return;
+  var name = (file.name || '').toLowerCase();
+  if (name && !name.endsWith('.csv') && !name.endsWith('.txt') && file.type && file.type.indexOf('csv') === -1 && file.type.indexOf('text') === -1) {
+    showError('Please upload a .csv file (the Mark Six results export from data.hkjc.guru).');
     return;
   }
+  if (typeof Papa === 'undefined') {
+    showError('Papa Parse library failed to load. Check your network connection and reload the page.');
+    return;
+  }
+
   document.getElementById('loading').style.display = 'block';
   document.getElementById('dashboard').style.display = 'none';
+  var errBox = document.getElementById('errorBox');
+  if (errBox) errBox.style.display = 'none';
   zone.style.display = 'none';
 
   Papa.parse(file, {
     header: true,
-    dynamicTyping: true,
+    dynamicTyping: false,
     skipEmptyLines: true,
-    complete: res => {
+    transformHeader: function (h) { return String(h || '').replace(/^\uFEFF/, '').trim(); },
+    complete: function (res) {
       try {
+        if (res.errors && res.errors.length) {
+          console.warn('PapaParse warnings:', res.errors.slice(0, 5));
+        }
+        if (!res.data || !res.data.length) {
+          throw new Error('CSV appears empty or could not be parsed.');
+        }
         processData(res.data);
       } catch (err) {
         console.error(err);
-        alert('Error processing CSV: ' + err.message);
-        resetApp();
+        showError(err.message || String(err));
+        document.getElementById('loading').style.display = 'none';
       }
-      document.getElementById('loading').style.display = 'none';
     },
-    error: err => {
-      alert('Parse error: ' + err.message);
-      resetApp();
+    error: function (err) {
+      showError('CSV parse error: ' + (err && err.message ? err.message : String(err)));
     }
   });
 }
 
 function resetApp() {
-  rawRows = []; draws = [];
-  Object.values(charts).forEach(c => c.destroy());
+  rawRows = [];
+  draws = [];
+  Object.keys(charts).forEach(function (k) {
+    try { charts[k].destroy(); } catch (e) {}
+  });
   charts = {};
   document.getElementById('uploadZone').style.display = 'block';
   document.getElementById('dashboard').style.display = 'none';
   document.getElementById('statusBar').classList.remove('show');
   document.getElementById('loading').style.display = 'none';
+  var errBox = document.getElementById('errorBox');
+  if (errBox) { errBox.style.display = 'none'; errBox.innerHTML = ''; }
   fileInput.value = '';
 }
 
-/* ========== Core Processing ========== */
+function toNum(v) {
+  if (v == null || v === '') return null;
+  var n = Number(String(v).replace(/,/g, '').trim());
+  return isNaN(n) ? null : n;
+}
+
 function processData(rows) {
+  // Normalise keys (BOM / whitespace)
+  rows = rows.map(function (r) {
+    var out = {};
+    Object.keys(r).forEach(function (k) {
+      out[String(k).replace(/^\uFEFF/, '').trim()] = r[k];
+    });
+    return out;
+  });
+
   rawRows = rows;
-  const needed = ['draw_date', 'ball_1', 'ball_2', 'ball_3', 'ball_4', 'ball_5', 'ball_6'];
-  const sample = rows[0] || {};
-  const missing = needed.filter(k => !(k in sample));
+  var sample = rows[0] || {};
+  var keys = Object.keys(sample);
+  console.log('CSV columns detected:', keys);
+
+  var needed = ['draw_date', 'ball_1', 'ball_2', 'ball_3', 'ball_4', 'ball_5', 'ball_6'];
+  var missing = needed.filter(function (k) { return !(k in sample); });
   if (missing.length) {
-    throw new Error('Missing required columns: ' + missing.join(', '));
+    throw new Error(
+      'Missing required columns: ' + missing.join(', ') +
+      '.\n\nColumns found:\n' + keys.join(', ') +
+      '\n\nPlease use the CSV from data.hkjc.guru (hkjc_marksix_results).'
+    );
   }
 
-  draws = rows
-    .map(r => {
-      const d = parseDate(r.draw_date);
-      const balls = [r.ball_1, r.ball_2, r.ball_3, r.ball_4, r.ball_5, r.ball_6]
-        .map(Number).filter(n => !isNaN(n) && n >= 1 && n <= 49);
-      if (balls.length !== 6 || !d) return null;
-      balls.sort((a, b) => a - b);
-      return {
-        id: r.draw_id || r.draw_record_id || '',
-        date: d,
-        year: d.getFullYear(),
-        month: d.getMonth() + 1,
-        dow: d.getDay(), // 0=Sun
-        dayName: r.draw_day_name || ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d.getDay()],
-        balls,
-        extra: r.extra_ball != null && r.extra_ball !== '' ? Number(r.extra_ball) : null,
-        sales: r.total_sales != null ? Number(r.total_sales) : null,
-        jackpot: r.jackpot_amount != null ? Number(r.jackpot_amount) : null,
-        firstPrize: r.first_prize_dividend != null ? Number(r.first_prize_dividend) : null,
-        isSnow: r.is_snowball_draw == 1 || r.is_snowball_draw === true || (r.draw_type_name || '').toLowerCase().includes('snowball'),
-        snowName: r.snowball_name_en || '',
-        type: r.draw_type_name || (r.is_snowball_draw ? 'Snowball' : 'Regular')
-      };
-    })
-    .filter(r => r && r.date >= CUTOFF)
-    .sort((a, b) => b.date - a.date); // newest first
+  var parsed = 0, badDate = 0, badBalls = 0, preCutoff = 0;
 
-  if (draws.length < 50) {
-    throw new Error('Fewer than 50 valid 49-ball draws found. Check the file format and date coverage.');
+  var mapped = rows.map(function (r) {
+    var d = parseDate(r.draw_date);
+    if (!d) { badDate++; return null; }
+
+    var balls = [r.ball_1, r.ball_2, r.ball_3, r.ball_4, r.ball_5, r.ball_6]
+      .map(function (v) {
+        if (v == null || v === '') return NaN;
+        return Number(String(v).trim());
+      })
+      .filter(function (n) { return !isNaN(n) && n >= 1 && n <= 49; });
+
+    if (balls.length !== 6) { badBalls++; return null; }
+    if (new Set(balls).size !== 6) { badBalls++; return null; }
+    balls.sort(function (a, b) { return a - b; });
+
+    if (dateToYMD(d) < CUTOFF_YMD) { preCutoff++; return null; }
+
+    parsed++;
+    var snowFlag = r.is_snowball_draw == 1 || r.is_snowball_draw === '1' || r.is_snowball_draw === true ||
+      String(r.draw_type_name || '').toLowerCase().indexOf('snowball') !== -1;
+
+    return {
+      id: String(r.draw_id || r.draw_record_id || ''),
+      date: d,
+      year: d.getFullYear(),
+      month: d.getMonth() + 1,
+      dow: d.getDay(),
+      dayName: r.draw_day_name || ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d.getDay()],
+      balls: balls,
+      extra: (function () {
+        var e = toNum(r.extra_ball);
+        return e != null && e >= 1 && e <= 49 ? e : null;
+      })(),
+      sales: toNum(r.total_sales),
+      jackpot: toNum(r.jackpot_amount),
+      firstPrize: toNum(r.first_prize_dividend),
+      isSnow: snowFlag,
+      snowName: r.snowball_name_en || '',
+      type: r.draw_type_name || 'Regular'
+    };
+  });
+
+  draws = mapped.filter(Boolean).sort(function (a, b) { return b.date - a.date; });
+
+  console.log('Parse stats:', { total: rows.length, parsed: parsed, badDate: badDate, badBalls: badBalls, preCutoff: preCutoff, final: draws.length });
+
+  if (draws.length < 30) {
+    throw new Error(
+      'Only ' + draws.length + ' valid 49-ball draws found (need at least 30).\n' +
+      'Rows in file: ' + rows.length +
+      ' | Bad date: ' + badDate +
+      ' | Bad balls: ' + badBalls +
+      ' | Pre-July-2002: ' + preCutoff + '.\n' +
+      'Confirm you uploaded the full hkjc_marksix_results CSV (not a sample of a few rows).'
+    );
   }
 
-  // Status
   document.getElementById('sTotal').textContent = fmtNum(rawRows.length);
   document.getElementById('sFiltered').textContent = fmtNum(draws.length);
-  const oldest = draws[draws.length - 1].date;
-  const newest = draws[0].date;
-  document.getElementById('sRange').textContent = `${fmtDate(oldest)} → ${fmtDate(newest)}`;
-  document.getElementById('sSnow').textContent = fmtNum(draws.filter(d => d.isSnow).length);
+  var oldest = draws[draws.length - 1].date;
+  var newest = draws[0].date;
+  document.getElementById('sRange').textContent = fmtDate(oldest) + ' → ' + fmtDate(newest);
+  document.getElementById('sSnow').textContent = fmtNum(draws.filter(function (d) { return d.isSnow; }).length);
   document.getElementById('statusBar').classList.add('show');
   document.getElementById('dashboard').style.display = 'block';
+  document.getElementById('loading').style.display = 'none';
+  var errBox = document.getElementById('errorBox');
+  if (errBox) errBox.style.display = 'none';
 
   buildOverview();
   buildFrequency();
@@ -658,89 +757,76 @@ function processData(rows) {
 }
 
 /* ========== Tabs ========== */
-document.getElementById('tabs').addEventListener('click', e => {
+document.getElementById('tabs').addEventListener('click', function (e) {
   if (!e.target.classList.contains('tab')) return;
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('active'); });
+  document.querySelectorAll('.panel').forEach(function (p) { p.classList.remove('active'); });
   e.target.classList.add('active');
   document.getElementById('panel-' + e.target.dataset.panel).classList.add('active');
 });
 
 /* ========== Overview ========== */
 function buildOverview() {
-  const n = draws.length;
-  const snow = draws.filter(d => d.isSnow).length;
-  const sales = draws.filter(d => d.sales).map(d => d.sales);
-  const avgSales = sales.length ? sales.reduce((a, b) => a + b, 0) / sales.length : 0;
-  const maxJack = Math.max(...draws.map(d => d.jackpot || 0));
-  const allBalls = draws.flatMap(d => d.balls);
-  const unique = new Set(allBalls).size;
+  var n = draws.length;
+  var snow = draws.filter(function (d) { return d.isSnow; }).length;
+  var sales = draws.filter(function (d) { return d.sales; }).map(function (d) { return d.sales; });
+  var avgSales = sales.length ? sales.reduce(function (a, b) { return a + b; }, 0) / sales.length : 0;
+  var maxJack = Math.max.apply(null, draws.map(function (d) { return d.jackpot || 0; }));
 
-  document.getElementById('kpiGrid').innerHTML = `
-    <div class="card kpi"><div class="value">${fmtNum(n)}</div><div class="label">49-Ball Draws Analysed</div></div>
-    <div class="card kpi"><div class="value">${fmtNum(snow)}</div><div class="label">Snowball Draws</div></div>
-    <div class="card kpi"><div class="value">${fmtNum(Math.round(avgSales))}</div><div class="label">Avg Total Sales (HKD)</div></div>
-    <div class="card kpi"><div class="value">${fmtNum(maxJack)}</div><div class="label">Highest Jackpot Recorded</div></div>
-  `;
+  document.getElementById('kpiGrid').innerHTML =
+    '<div class="card kpi"><div class="value">' + fmtNum(n) + '</div><div class="label">49-Ball Draws Analysed</div></div>' +
+    '<div class="card kpi"><div class="value">' + fmtNum(snow) + '</div><div class="label">Snowball Draws</div></div>' +
+    '<div class="card kpi"><div class="value">' + fmtNum(Math.round(avgSales)) + '</div><div class="label">Avg Total Sales (HKD)</div></div>' +
+    '<div class="card kpi"><div class="value">' + fmtNum(maxJack) + '</div><div class="label">Highest Jackpot Recorded</div></div>';
 
-  const tbody = document.querySelector('#recentTable tbody');
-  tbody.innerHTML = draws.slice(0, 15).map(d => `
-    <tr>
-      <td>${d.id}</td>
-      <td>${fmtDate(d.date)}</td>
-      <td>${d.isSnow ? '❄️ ' + (d.snowName || 'Snowball') : 'Regular'}</td>
-      <td>${d.balls.map(b => ballHtml(b)).join('')}</td>
-      <td>${d.extra != null ? ballHtml(d.extra, true) : '—'}</td>
-      <td>${fmtNum(d.sales)}</td>
-      <td>${fmtNum(d.jackpot)}</td>
-    </tr>
-  `).join('');
+  var tbody = document.querySelector('#recentTable tbody');
+  tbody.innerHTML = draws.slice(0, 15).map(function (d) {
+    return '<tr>' +
+      '<td>' + d.id + '</td>' +
+      '<td>' + fmtDate(d.date) + '</td>' +
+      '<td>' + (d.isSnow ? '❄️ ' + (d.snowName || 'Snowball') : 'Regular') + '</td>' +
+      '<td>' + d.balls.map(function (b) { return ballHtml(b); }).join('') + '</td>' +
+      '<td>' + (d.extra != null ? ballHtml(d.extra, true) : '—') + '</td>' +
+      '<td>' + fmtNum(d.sales) + '</td>' +
+      '<td>' + fmtNum(d.jackpot) + '</td>' +
+      '</tr>';
+  }).join('');
 }
 
 /* ========== Frequency ========== */
 function buildFrequency() {
-  const freq = Array(50).fill(0);
-  const lastSeen = Array(50).fill(null);
-  const extraFreq = Array(50).fill(0);
-  const colourCount = { red: 0, blue: 0, green: 0 };
+  var freq = Array(50).fill(0);
+  var lastSeen = Array(50).fill(null);
+  var extraFreq = Array(50).fill(0);
+  var colourCount = { red: 0, blue: 0, green: 0 };
 
-  draws.forEach((d, idx) => {
-    d.balls.forEach(b => {
+  draws.forEach(function (d, idx) {
+    d.balls.forEach(function (b) {
       freq[b]++;
-      if (lastSeen[b] === null) lastSeen[b] = idx; // newest first → first encounter = most recent
+      if (lastSeen[b] === null) lastSeen[b] = idx;
       colourCount[COLOUR(b)]++;
     });
     if (d.extra != null && d.extra >= 1 && d.extra <= 49) extraFreq[d.extra]++;
   });
 
-  // Chart – main frequency
-  const labels = Array.from({ length: 49 }, (_, i) => i + 1);
-  const data = labels.map(n => freq[n]);
-  const bg = labels.map(n => {
-    const c = COLOUR(n);
+  var labels = Array.from({ length: 49 }, function (_, i) { return i + 1; });
+  var data = labels.map(function (n) { return freq[n]; });
+  var bg = labels.map(function (n) {
+    var c = COLOUR(n);
     return c === 'red' ? 'rgba(248,113,113,0.75)' : c === 'blue' ? 'rgba(96,165,250,0.75)' : 'rgba(74,222,128,0.75)';
   });
 
   if (charts.freq) charts.freq.destroy();
   charts.freq = new Chart(document.getElementById('freqChart'), {
     type: 'bar',
-    data: {
-      labels,
-      datasets: [{
-        label: 'Hits',
-        data,
-        backgroundColor: bg,
-        borderWidth: 0
-      }]
-    },
+    data: { labels: labels, datasets: [{ label: 'Hits', data: data, backgroundColor: bg, borderWidth: 0 }] },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
+      responsive: true, maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        tooltip: { callbacks: { afterLabel: ctx => {
-          const exp = draws.length * EXPECTED_FREQ;
-          return `Expected ≈ ${exp.toFixed(1)} | Δ ${(ctx.raw - exp).toFixed(1)}`;
+        tooltip: { callbacks: { afterLabel: function (ctx) {
+          var exp = draws.length * EXPECTED_FREQ;
+          return 'Expected ≈ ' + exp.toFixed(1) + ' | Δ ' + (ctx.raw - exp).toFixed(1);
         }}}
       },
       scales: {
@@ -750,43 +836,29 @@ function buildFrequency() {
     }
   });
 
-  // Hot / Cold
-  const ranked = labels.map(n => ({ n, hits: freq[n], gap: lastSeen[n] ?? draws.length }))
-    .sort((a, b) => b.hits - a.hits);
-  const hot = ranked.slice(0, 10);
-  const cold = [...ranked].sort((a, b) => a.hits - b.hits).slice(0, 10);
+  var ranked = labels.map(function (n) { return { n: n, hits: freq[n], gap: lastSeen[n] != null ? lastSeen[n] : draws.length }; })
+    .sort(function (a, b) { return b.hits - a.hits; });
+  var hot = ranked.slice(0, 10);
+  var cold = ranked.slice().sort(function (a, b) { return a.hits - b.hits; }).slice(0, 10);
 
-  document.getElementById('hotCold').innerHTML = `
-    <div style="margin-bottom:16px;">
-      <strong style="color:#f87171;">Hottest (most drawn)</strong>
-      <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;">
-        ${hot.map((x,i) => `<span style="background:var(--surface2);padding:6px 10px;border-radius:8px;font-size:0.85rem;">#${i+1} ${ballHtml(x.n)} <strong>${x.hits}</strong></span>`).join('')}
-      </div>
-    </div>
-    <div>
-      <strong style="color:#60a5fa;">Coldest (least drawn)</strong>
-      <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;">
-        ${cold.map((x,i) => `<span style="background:var(--surface2);padding:6px 10px;border-radius:8px;font-size:0.85rem;">#${i+1} ${ballHtml(x.n)} <strong>${x.hits}</strong></span>`).join('')}
-      </div>
-    </div>
-    <div class="insight info" style="margin-top:16px;">
-      Under a fair 6/49 model each number is expected ≈ ${(draws.length * EXPECTED_FREQ).toFixed(1)} times.
-      Observed range: ${Math.min(...data)} – ${Math.max(...data)}. Chi-square uniformity test can be used to assess deviation (see Insights).
-    </div>
-  `;
+  document.getElementById('hotCold').innerHTML =
+    '<div style="margin-bottom:16px;"><strong style="color:#f87171;">Hottest (most drawn)</strong>' +
+    '<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;">' +
+    hot.map(function (x, i) {
+      return '<span style="background:var(--surface2);padding:6px 10px;border-radius:8px;font-size:0.85rem;">#' + (i + 1) + ' ' + ballHtml(x.n) + ' <strong>' + x.hits + '</strong></span>';
+    }).join('') + '</div></div>' +
+    '<div><strong style="color:#60a5fa;">Coldest (least drawn)</strong>' +
+    '<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;">' +
+    cold.map(function (x, i) {
+      return '<span style="background:var(--surface2);padding:6px 10px;border-radius:8px;font-size:0.85rem;">#' + (i + 1) + ' ' + ballHtml(x.n) + ' <strong>' + x.hits + '</strong></span>';
+    }).join('') + '</div></div>' +
+    '<div class="insight info" style="margin-top:16px;">Under a fair 6/49 model each number is expected ≈ ' +
+    (draws.length * EXPECTED_FREQ).toFixed(1) + ' times. Observed range: ' + Math.min.apply(null, data) + ' – ' + Math.max.apply(null, data) + '.</div>';
 
-  // Extra ball chart
   if (charts.extra) charts.extra.destroy();
   charts.extra = new Chart(document.getElementById('extraChart'), {
     type: 'bar',
-    data: {
-      labels,
-      datasets: [{
-        label: 'Extra ball hits',
-        data: labels.map(n => extraFreq[n]),
-        backgroundColor: 'rgba(251,191,36,0.7)'
-      }]
-    },
+    data: { labels: labels, datasets: [{ label: 'Extra ball hits', data: labels.map(function (n) { return extraFreq[n]; }), backgroundColor: 'rgba(251,191,36,0.7)' }] },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
@@ -797,70 +869,51 @@ function buildFrequency() {
     }
   });
 
-  // Colour
-  const totalColour = colourCount.red + colourCount.blue + colourCount.green;
+  var totalColour = colourCount.red + colourCount.blue + colourCount.green;
   if (charts.colour) charts.colour.destroy();
   charts.colour = new Chart(document.getElementById('colourChart'), {
     type: 'doughnut',
     data: {
       labels: ['Red (1-10,30-39)', 'Blue (11-20,40-49)', 'Green (21-29)'],
-      datasets: [{
-        data: [colourCount.red, colourCount.blue, colourCount.green],
-        backgroundColor: ['#f87171', '#60a5fa', '#4ade80'],
-        borderWidth: 0
-      }]
+      datasets: [{ data: [colourCount.red, colourCount.blue, colourCount.green], backgroundColor: ['#f87171', '#60a5fa', '#4ade80'], borderWidth: 0 }]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: {
         legend: { position: 'bottom', labels: { color: '#e7ecf3', padding: 16 } },
-        tooltip: { callbacks: { label: ctx => {
-          const pct = (ctx.raw / totalColour * 100).toFixed(1);
-          return `${ctx.label}: ${ctx.raw} (${pct}%)`;
+        tooltip: { callbacks: { label: function (ctx) {
+          var pct = (ctx.raw / totalColour * 100).toFixed(1);
+          return ctx.label + ': ' + ctx.raw + ' (' + pct + '%)';
         }}}
       }
     }
   });
 
-  // Frequency table
-  const tbody = document.querySelector('#freqTable tbody');
-  tbody.innerHTML = ranked.map(x => {
-    const pct = (x.hits / draws.length * 100).toFixed(2);
-    const expPct = (EXPECTED_FREQ * 100).toFixed(2);
-    const dev = (x.hits / draws.length - EXPECTED_FREQ) * 100;
-    const lastDate = lastSeen[x.n] != null ? fmtDate(draws[lastSeen[x.n]].date) : '—';
-    return `<tr>
-      <td>${ballHtml(x.n)} ${x.n}</td>
-      <td>${x.hits}</td>
-      <td>${pct}%</td>
-      <td>${expPct}%</td>
-      <td style="color:${dev > 0.5 ? '#4ade80' : dev < -0.5 ? '#f87171' : 'inherit'}">${dev > 0 ? '+' : ''}${dev.toFixed(2)} pp</td>
-      <td>${lastDate}</td>
-      <td>${x.gap}</td>
-    </tr>`;
+  var tbody = document.querySelector('#freqTable tbody');
+  tbody.innerHTML = ranked.map(function (x) {
+    var pct = (x.hits / draws.length * 100).toFixed(2);
+    var expPct = (EXPECTED_FREQ * 100).toFixed(2);
+    var dev = (x.hits / draws.length - EXPECTED_FREQ) * 100;
+    var lastDate = lastSeen[x.n] != null ? fmtDate(draws[lastSeen[x.n]].date) : '—';
+    var color = dev > 0.5 ? '#4ade80' : dev < -0.5 ? '#f87171' : 'inherit';
+    return '<tr><td>' + ballHtml(x.n) + ' ' + x.n + '</td><td>' + x.hits + '</td><td>' + pct + '%</td><td>' + expPct +
+      '%</td><td style="color:' + color + '">' + (dev > 0 ? '+' : '') + dev.toFixed(2) + ' pp</td><td>' + lastDate + '</td><td>' + x.gap + '</td></tr>';
   }).join('');
 }
 
 /* ========== Patterns ========== */
 function buildPatterns() {
-  // Odd/Even
-  const oe = {};
-  draws.forEach(d => {
-    const odds = d.balls.filter(b => b % 2 === 1).length;
-    const key = `${odds} odd / ${6 - odds} even`;
+  var oe = {};
+  draws.forEach(function (d) {
+    var odds = d.balls.filter(function (b) { return b % 2 === 1; }).length;
+    var key = odds + ' odd / ' + (6 - odds) + ' even';
     oe[key] = (oe[key] || 0) + 1;
   });
-  const oeLabels = ['0 odd / 6 even','1 odd / 5 even','2 odd / 4 even','3 odd / 3 even','4 odd / 2 even','5 odd / 1 even','6 odd / 0 even'];
+  var oeLabels = ['0 odd / 6 even','1 odd / 5 even','2 odd / 4 even','3 odd / 3 even','4 odd / 2 even','5 odd / 1 even','6 odd / 0 even'];
   if (charts.oe) charts.oe.destroy();
   charts.oe = new Chart(document.getElementById('oddEvenChart'), {
     type: 'bar',
-    data: {
-      labels: oeLabels,
-      datasets: [{
-        data: oeLabels.map(k => oe[k] || 0),
-        backgroundColor: 'rgba(139,92,246,0.7)'
-      }]
-    },
+    data: { labels: oeLabels, datasets: [{ data: oeLabels.map(function (k) { return oe[k] || 0; }), backgroundColor: 'rgba(139,92,246,0.7)' }] },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
@@ -871,24 +924,17 @@ function buildPatterns() {
     }
   });
 
-  // High / Low
-  const hl = {};
-  draws.forEach(d => {
-    const low = d.balls.filter(b => b <= 24).length;
-    const key = `${low} low / ${6 - low} high`;
+  var hl = {};
+  draws.forEach(function (d) {
+    var low = d.balls.filter(function (b) { return b <= 24; }).length;
+    var key = low + ' low / ' + (6 - low) + ' high';
     hl[key] = (hl[key] || 0) + 1;
   });
-  const hlLabels = ['0L/6H','1L/5H','2L/4H','3L/3H','4L/2H','5L/1H','6L/0H'];
+  var hlKeys = ['0 low / 6 high','1 low / 5 high','2 low / 4 high','3 low / 3 high','4 low / 2 high','5 low / 1 high','6 low / 0 high'];
   if (charts.hl) charts.hl.destroy();
   charts.hl = new Chart(document.getElementById('highLowChart'), {
     type: 'bar',
-    data: {
-      labels: hlLabels,
-      datasets: [{
-        data: ['0 low / 6 high','1 low / 5 high','2 low / 4 high','3 low / 3 high','4 low / 2 high','5 low / 1 high','6 low / 0 high'].map(k => hl[k] || 0),
-        backgroundColor: 'rgba(6,182,212,0.7)'
-      }]
-    },
+    data: { labels: ['0L/6H','1L/5H','2L/4H','3L/3H','4L/2H','5L/1H','6L/0H'], datasets: [{ data: hlKeys.map(function (k) { return hl[k] || 0; }), backgroundColor: 'rgba(6,182,212,0.7)' }] },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
@@ -899,27 +945,24 @@ function buildPatterns() {
     }
   });
 
-  // Sum distribution
-  const sums = draws.map(d => d.balls.reduce((a, b) => a + b, 0));
-  const minS = Math.min(...sums), maxS = Math.max(...sums);
-  const binSize = 15;
-  const bins = {};
-  sums.forEach(s => {
-    const b = Math.floor((s - minS) / binSize) * binSize + minS;
+  var sums = draws.map(function (d) { return d.balls.reduce(function (a, b) { return a + b; }, 0); });
+  var minS = Math.min.apply(null, sums), maxS = Math.max.apply(null, sums);
+  var binSize = 15;
+  var bins = {};
+  sums.forEach(function (s) {
+    var b = Math.floor((s - minS) / binSize) * binSize + minS;
     bins[b] = (bins[b] || 0) + 1;
   });
-  const sumLabels = Object.keys(bins).map(Number).sort((a, b) => a - b);
+  var sumLabels = Object.keys(bins).map(Number).sort(function (a, b) { return a - b; });
   if (charts.sum) charts.sum.destroy();
   charts.sum = new Chart(document.getElementById('sumChart'), {
     type: 'bar',
-    data: {
-      labels: sumLabels.map(s => `${s}–${s + binSize - 1}`),
-      datasets: [{ data: sumLabels.map(s => bins[s]), backgroundColor: 'rgba(236,72,153,0.65)' }]
-    },
+    data: { labels: sumLabels.map(function (s) { return s + '–' + (s + binSize - 1); }), datasets: [{ data: sumLabels.map(function (s) { return bins[s]; }), backgroundColor: 'rgba(236,72,153,0.65)' }] },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false },
-        title: { display: true, text: `Mean sum = ${(sums.reduce((a,b)=>a+b,0)/sums.length).toFixed(1)}  |  Theoretical mean ≈ 150`, color: '#8b9cb3', font: { size: 12 } }
+      plugins: {
+        legend: { display: false },
+        title: { display: true, text: 'Mean sum = ' + (sums.reduce(function (a, b) { return a + b; }, 0) / sums.length).toFixed(1) + '  |  Theoretical mean ≈ 150', color: '#8b9cb3', font: { size: 12 } }
       },
       scales: {
         x: { ticks: { color: '#8b9cb3', maxRotation: 45, font: { size: 10 } }, grid: { display: false } },
@@ -928,20 +971,16 @@ function buildPatterns() {
     }
   });
 
-  // Consecutive
-  const consecCounts = [0, 0, 0, 0, 0, 0]; // 0 to 5 consecutive pairs
-  draws.forEach(d => {
-    let c = 0;
-    for (let i = 1; i < 6; i++) if (d.balls[i] === d.balls[i - 1] + 1) c++;
+  var consecCounts = [0, 0, 0, 0, 0, 0];
+  draws.forEach(function (d) {
+    var c = 0;
+    for (var i = 1; i < 6; i++) if (d.balls[i] === d.balls[i - 1] + 1) c++;
     consecCounts[Math.min(c, 5)]++;
   });
   if (charts.consec) charts.consec.destroy();
   charts.consec = new Chart(document.getElementById('consecChart'), {
     type: 'bar',
-    data: {
-      labels: ['0 pairs', '1 pair', '2 pairs', '3 pairs', '4 pairs', '5 pairs'],
-      datasets: [{ data: consecCounts, backgroundColor: 'rgba(245,158,11,0.7)' }]
-    },
+    data: { labels: ['0 pairs', '1 pair', '2 pairs', '3 pairs', '4 pairs', '5 pairs'], datasets: [{ data: consecCounts, backgroundColor: 'rgba(245,158,11,0.7)' }] },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
@@ -952,17 +991,13 @@ function buildPatterns() {
     }
   });
 
-  // Day of week
-  const dowMap = { 0: 'Sun', 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat' };
-  const dowCount = { 0:0,1:0,2:0,3:0,4:0,5:0,6:0 };
-  draws.forEach(d => dowCount[d.dow]++);
+  var dowMap = { 0: 'Sun', 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat' };
+  var dowCount = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+  draws.forEach(function (d) { dowCount[d.dow]++; });
   if (charts.dow) charts.dow.destroy();
   charts.dow = new Chart(document.getElementById('dowChart'), {
     type: 'bar',
-    data: {
-      labels: [0,1,2,3,4,5,6].map(d => dowMap[d]),
-      datasets: [{ data: [0,1,2,3,4,5,6].map(d => dowCount[d]), backgroundColor: 'rgba(59,130,246,0.7)' }]
-    },
+    data: { labels: [0,1,2,3,4,5,6].map(function (d) { return dowMap[d]; }), datasets: [{ data: [0,1,2,3,4,5,6].map(function (d) { return dowCount[d]; }), backgroundColor: 'rgba(59,130,246,0.7)' }] },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
@@ -973,25 +1008,20 @@ function buildPatterns() {
     }
   });
 
-  // Decade groups 1-10 … 41-49
-  const decades = [0,0,0,0,0];
-  draws.forEach(d => d.balls.forEach(b => {
-    if (b <= 10) decades[0]++;
-    else if (b <= 20) decades[1]++;
-    else if (b <= 30) decades[2]++;
-    else if (b <= 40) decades[3]++;
-    else decades[4]++;
-  }));
+  var decades = [0, 0, 0, 0, 0];
+  draws.forEach(function (d) {
+    d.balls.forEach(function (b) {
+      if (b <= 10) decades[0]++;
+      else if (b <= 20) decades[1]++;
+      else if (b <= 30) decades[2]++;
+      else if (b <= 40) decades[3]++;
+      else decades[4]++;
+    });
+  });
   if (charts.decade) charts.decade.destroy();
   charts.decade = new Chart(document.getElementById('decadeChart'), {
     type: 'bar',
-    data: {
-      labels: ['1–10', '11–20', '21–30', '31–40', '41–49'],
-      datasets: [{
-        data: decades,
-        backgroundColor: ['#f87171','#60a5fa','#4ade80','#a78bfa','#fbbf24']
-      }]
-    },
+    data: { labels: ['1–10', '11–20', '21–30', '31–40', '41–49'], datasets: [{ data: decades, backgroundColor: ['#f87171','#60a5fa','#4ade80','#a78bfa','#fbbf24'] }] },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
@@ -1005,80 +1035,59 @@ function buildPatterns() {
 
 /* ========== Correlation ========== */
 function buildCorrelation() {
-  const pairCount = {};
-  const extraAssoc = {};
-  draws.forEach(d => {
-    for (let i = 0; i < 6; i++) {
-      for (let j = i + 1; j < 6; j++) {
-        const a = Math.min(d.balls[i], d.balls[j]);
-        const b = Math.max(d.balls[i], d.balls[j]);
-        const key = `${a}-${b}`;
+  var pairCount = {};
+  var extraAssoc = {};
+  draws.forEach(function (d) {
+    for (var i = 0; i < 6; i++) {
+      for (var j = i + 1; j < 6; j++) {
+        var a = Math.min(d.balls[i], d.balls[j]);
+        var b = Math.max(d.balls[i], d.balls[j]);
+        var key = a + '-' + b;
         pairCount[key] = (pairCount[key] || 0) + 1;
       }
       if (d.extra != null) {
-        const k = `${d.balls[i]}|${d.extra}`;
+        var k = d.balls[i] + '|' + d.extra;
         extraAssoc[k] = (extraAssoc[k] || 0) + 1;
       }
     }
   });
 
-  const expectedPairRate = (6 * 5) / (49 * 48); // ≈ 0.012755
-  const pairs = Object.entries(pairCount)
-    .map(([k, c]) => {
-      const [a, b] = k.split('-').map(Number);
-      return { a, b, c, rate: c / draws.length, lift: (c / draws.length) / expectedPairRate };
-    })
-    .sort((x, y) => y.c - x.c);
+  var expectedPairRate = (6 * 5) / (49 * 48);
+  var pairs = Object.keys(pairCount).map(function (k) {
+    var parts = k.split('-').map(Number);
+    var c = pairCount[k];
+    return { a: parts[0], b: parts[1], c: c, rate: c / draws.length, lift: (c / draws.length) / expectedPairRate };
+  }).sort(function (x, y) { return y.c - x.c; });
 
-  const tbody = document.querySelector('#pairTable tbody');
-  tbody.innerHTML = pairs.slice(0, 30).map((p, i) => `
-    <tr>
-      <td>${i + 1}</td>
-      <td>${ballHtml(p.a)} ${ballHtml(p.b)}</td>
-      <td>${p.c}</td>
-      <td>${(p.rate * 100).toFixed(2)}%</td>
-      <td style="color:${p.lift > 1.15 ? '#4ade80' : p.lift < 0.85 ? '#f87171' : 'inherit'}">${p.lift.toFixed(2)}×</td>
-    </tr>
-  `).join('');
+  document.querySelector('#pairTable tbody').innerHTML = pairs.slice(0, 30).map(function (p, i) {
+    var color = p.lift > 1.15 ? '#4ade80' : p.lift < 0.85 ? '#f87171' : 'inherit';
+    return '<tr><td>' + (i + 1) + '</td><td>' + ballHtml(p.a) + ' ' + ballHtml(p.b) + '</td><td>' + p.c +
+      '</td><td>' + (p.rate * 100).toFixed(2) + '%</td><td style="color:' + color + '">' + p.lift.toFixed(2) + '×</td></tr>';
+  }).join('');
 
-  const rareBody = document.querySelector('#rarePairTable tbody');
-  rareBody.innerHTML = pairs.slice(-20).reverse().map(p => `
-    <tr>
-      <td>${ballHtml(p.a)} ${ballHtml(p.b)}</td>
-      <td>${p.c}</td>
-      <td>${(p.rate * 100).toFixed(2)}%</td>
-    </tr>
-  `).join('');
+  document.querySelector('#rarePairTable tbody').innerHTML = pairs.slice(-20).reverse().map(function (p) {
+    return '<tr><td>' + ballHtml(p.a) + ' ' + ballHtml(p.b) + '</td><td>' + p.c + '</td><td>' + (p.rate * 100).toFixed(2) + '%</td></tr>';
+  }).join('');
 
-  const ea = Object.entries(extraAssoc)
-    .map(([k, c]) => { const [m, e] = k.split('|').map(Number); return { m, e, c }; })
-    .sort((a, b) => b.c - a.c)
-    .slice(0, 25);
-  document.querySelector('#extraAssocTable tbody').innerHTML = ea.map(x => `
-    <tr><td>${ballHtml(x.m)}</td><td>${ballHtml(x.e, true)}</td><td>${x.c}</td></tr>
-  `).join('');
+  var ea = Object.keys(extraAssoc).map(function (k) {
+    var parts = k.split('|').map(Number);
+    return { m: parts[0], e: parts[1], c: extraAssoc[k] };
+  }).sort(function (a, b) { return b.c - a.c; }).slice(0, 25);
+
+  document.querySelector('#extraAssocTable tbody').innerHTML = ea.map(function (x) {
+    return '<tr><td>' + ballHtml(x.m) + '</td><td>' + ballHtml(x.e, true) + '</td><td>' + x.c + '</td></tr>';
+  }).join('');
 }
 
 /* ========== Trends ========== */
 function buildTrends() {
-  // Year counts
-  const yearMap = {};
-  draws.forEach(d => { yearMap[d.year] = (yearMap[d.year] || 0) + 1; });
-  const years = Object.keys(yearMap).map(Number).sort((a, b) => a - b);
+  var yearMap = {};
+  draws.forEach(function (d) { yearMap[d.year] = (yearMap[d.year] || 0) + 1; });
+  var years = Object.keys(yearMap).map(Number).sort(function (a, b) { return a - b; });
   if (charts.year) charts.year.destroy();
   charts.year = new Chart(document.getElementById('yearChart'), {
     type: 'line',
-    data: {
-      labels: years,
-      datasets: [{
-        label: 'Draws',
-        data: years.map(y => yearMap[y]),
-        borderColor: '#3b82f6',
-        backgroundColor: 'rgba(59,130,246,0.15)',
-        fill: true,
-        tension: 0.3
-      }]
-    },
+    data: { labels: years, datasets: [{ label: 'Draws', data: years.map(function (y) { return yearMap[y]; }), borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.15)', fill: true, tension: 0.3 }] },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
@@ -1089,32 +1098,23 @@ function buildTrends() {
     }
   });
 
-  // Average gap
-  const lastIdx = Array(50).fill(-1);
-  const gaps = Array(50).fill(null).map(() => []);
-  // process oldest → newest for gap calculation
-  const chrono = [...draws].reverse();
-  chrono.forEach((d, i) => {
-    d.balls.forEach(b => {
+  var lastIdx = Array(50).fill(-1);
+  var gaps = Array(50).fill(null).map(function () { return []; });
+  var chrono = draws.slice().reverse();
+  chrono.forEach(function (d, i) {
+    d.balls.forEach(function (b) {
       if (lastIdx[b] >= 0) gaps[b].push(i - lastIdx[b]);
       lastIdx[b] = i;
     });
   });
-  const avgGap = Array.from({ length: 49 }, (_, i) => {
-    const g = gaps[i + 1];
-    return g.length ? g.reduce((a, b) => a + b, 0) / g.length : 0;
+  var avgGap = Array.from({ length: 49 }, function (_, i) {
+    var g = gaps[i + 1];
+    return g.length ? g.reduce(function (a, b) { return a + b; }, 0) / g.length : 0;
   });
   if (charts.gap) charts.gap.destroy();
   charts.gap = new Chart(document.getElementById('gapChart'), {
     type: 'bar',
-    data: {
-      labels: Array.from({ length: 49 }, (_, i) => i + 1),
-      datasets: [{
-        label: 'Avg gap (draws)',
-        data: avgGap,
-        backgroundColor: 'rgba(16,185,129,0.65)'
-      }]
-    },
+    data: { labels: Array.from({ length: 49 }, function (_, i) { return i + 1; }), datasets: [{ label: 'Avg gap (draws)', data: avgGap, backgroundColor: 'rgba(16,185,129,0.65)' }] },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
@@ -1126,59 +1126,62 @@ function buildTrends() {
     }
   });
 
-  // Trend select
-  const sel = document.getElementById('trendSelect');
-  sel.innerHTML = Array.from({ length: 49 }, (_, i) => `<option value="${i+1}">${i+1}</option>`).join('');
-  // preselect top 5 hot
-  const freq = Array(50).fill(0);
-  draws.forEach(d => d.balls.forEach(b => freq[b]++));
-  const top5 = Array.from({ length: 49 }, (_, i) => i + 1).sort((a, b) => freq[b] - freq[a]).slice(0, 5);
-  top5.forEach(n => { sel.querySelector(`option[value="${n}"]`).selected = true; });
+  var sel = document.getElementById('trendSelect');
+  sel.innerHTML = Array.from({ length: 49 }, function (_, i) { return '<option value="' + (i + 1) + '">' + (i + 1) + '</option>'; }).join('');
+  var freq = Array(50).fill(0);
+  draws.forEach(function (d) { d.balls.forEach(function (b) { freq[b]++; }); });
+  var top5 = Array.from({ length: 49 }, function (_, i) { return i + 1; }).sort(function (a, b) { return freq[b] - freq[a]; }).slice(0, 5);
+  top5.forEach(function (n) {
+    var opt = sel.querySelector('option[value="' + n + '"]');
+    if (opt) opt.selected = true;
+  });
   updateTrendChart();
 }
 
 function updateTrendChart() {
-  const sel = document.getElementById('trendSelect');
-  const selected = Array.from(sel.selectedOptions).map(o => Number(o.value)).slice(0, 8);
+  var sel = document.getElementById('trendSelect');
+  var selected = Array.from(sel.selectedOptions).map(function (o) { return Number(o.value); }).slice(0, 8);
   if (!selected.length) return;
 
-  const window = 50;
-  const chrono = [...draws].reverse(); // oldest first
-  const series = {};
-  selected.forEach(n => { series[n] = []; });
+  var windowSize = 50;
+  var chrono = draws.slice().reverse();
+  var series = {};
+  selected.forEach(function (n) { series[n] = []; });
 
-  for (let i = 0; i < chrono.length; i++) {
-    selected.forEach(n => {
-      let hits = 0;
-      const start = Math.max(0, i - window + 1);
-      for (let j = start; j <= i; j++) {
-        if (chrono[j].balls.includes(n)) hits++;
+  for (var i = 0; i < chrono.length; i++) {
+    selected.forEach(function (n) {
+      var hits = 0;
+      var start = Math.max(0, i - windowSize + 1);
+      for (var j = start; j <= i; j++) {
+        if (chrono[j].balls.indexOf(n) !== -1) hits++;
       }
       series[n].push(hits);
     });
   }
 
-  const colours = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899','#84cc16'];
+  var colours = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899','#84cc16'];
   if (charts.trend) charts.trend.destroy();
   charts.trend = new Chart(document.getElementById('trendChart'), {
     type: 'line',
     data: {
-      labels: chrono.map((d, i) => i % 20 === 0 ? fmtDate(d.date) : ''),
-      datasets: selected.map((n, idx) => ({
-        label: `No. ${n}`,
-        data: series[n],
-        borderColor: colours[idx % colours.length],
-        backgroundColor: 'transparent',
-        borderWidth: 2,
-        pointRadius: 0,
-        tension: 0.2
-      }))
+      labels: chrono.map(function (d, i) { return i % 20 === 0 ? fmtDate(d.date) : ''; }),
+      datasets: selected.map(function (n, idx) {
+        return {
+          label: 'No. ' + n,
+          data: series[n],
+          borderColor: colours[idx % colours.length],
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          pointRadius: 0,
+          tension: 0.2
+        };
+      })
     },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: {
         legend: { labels: { color: '#e7ecf3' } },
-        title: { display: true, text: `Hits in rolling ${window}-draw window`, color: '#8b9cb3', font: { size: 12 } }
+        title: { display: true, text: 'Hits in rolling ' + windowSize + '-draw window', color: '#8b9cb3', font: { size: 12 } }
       },
       scales: {
         x: { ticks: { color: '#8b9cb3', maxTicksLimit: 12 }, grid: { display: false } },
@@ -1190,15 +1193,15 @@ function updateTrendChart() {
 
 /* ========== Sales ========== */
 function buildSales() {
-  const withSales = draws.filter(d => d.sales != null && d.sales > 0).reverse();
+  var withSales = draws.filter(function (d) { return d.sales != null && d.sales > 0; }).slice().reverse();
   if (charts.sales) charts.sales.destroy();
   charts.sales = new Chart(document.getElementById('salesChart'), {
     type: 'line',
     data: {
-      labels: withSales.map((d, i) => i % 30 === 0 ? fmtDate(d.date) : ''),
+      labels: withSales.map(function (d, i) { return i % 30 === 0 ? fmtDate(d.date) : ''; }),
       datasets: [{
         label: 'Total Sales (HKD)',
-        data: withSales.map(d => d.sales),
+        data: withSales.map(function (d) { return d.sales; }),
         borderColor: '#10b981',
         backgroundColor: 'rgba(16,185,129,0.1)',
         fill: true,
@@ -1212,26 +1215,22 @@ function buildSales() {
       plugins: { legend: { display: false } },
       scales: {
         x: { ticks: { color: '#8b9cb3', maxTicksLimit: 10 }, grid: { display: false } },
-        y: { ticks: { color: '#8b9cb3', callback: v => (v/1e6).toFixed(0) + 'M' }, grid: { color: 'rgba(45,58,79,0.5)' } }
+        y: { ticks: { color: '#8b9cb3', callback: function (v) { return (v / 1e6).toFixed(0) + 'M'; } }, grid: { color: 'rgba(45,58,79,0.5)' } }
       }
     }
   });
 
-  // Jackpot histogram
-  const jacks = draws.filter(d => d.jackpot != null && d.jackpot > 0).map(d => d.jackpot);
-  const jBins = {};
-  jacks.forEach(j => {
-    const b = Math.floor(j / 5e6) * 5e6;
+  var jacks = draws.filter(function (d) { return d.jackpot != null && d.jackpot > 0; }).map(function (d) { return d.jackpot; });
+  var jBins = {};
+  jacks.forEach(function (j) {
+    var b = Math.floor(j / 5e6) * 5e6;
     jBins[b] = (jBins[b] || 0) + 1;
   });
-  const jLabels = Object.keys(jBins).map(Number).sort((a, b) => a - b);
+  var jLabels = Object.keys(jBins).map(Number).sort(function (a, b) { return a - b; });
   if (charts.jack) charts.jack.destroy();
   charts.jack = new Chart(document.getElementById('jackpotChart'), {
     type: 'bar',
-    data: {
-      labels: jLabels.map(v => (v / 1e6).toFixed(0) + 'M+'),
-      datasets: [{ data: jLabels.map(v => jBins[v]), backgroundColor: 'rgba(245,158,11,0.7)' }]
-    },
+    data: { labels: jLabels.map(function (v) { return (v / 1e6).toFixed(0) + 'M+'; }), datasets: [{ data: jLabels.map(function (v) { return jBins[v]; }), backgroundColor: 'rgba(245,158,11,0.7)' }] },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
@@ -1242,53 +1241,39 @@ function buildSales() {
     }
   });
 
-  // Snow vs Regular avg sales
-  const regSales = draws.filter(d => !d.isSnow && d.sales).map(d => d.sales);
-  const snowSales = draws.filter(d => d.isSnow && d.sales).map(d => d.sales);
-  const avg = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+  function avg(arr) { return arr.length ? arr.reduce(function (a, b) { return a + b; }, 0) / arr.length : 0; }
+  var regSales = draws.filter(function (d) { return !d.isSnow && d.sales; }).map(function (d) { return d.sales; });
+  var snowSales = draws.filter(function (d) { return d.isSnow && d.sales; }).map(function (d) { return d.sales; });
   if (charts.snowSales) charts.snowSales.destroy();
   charts.snowSales = new Chart(document.getElementById('snowSalesChart'), {
     type: 'bar',
-    data: {
-      labels: ['Regular Draws', 'Snowball Draws'],
-      datasets: [{
-        data: [avg(regSales), avg(snowSales)],
-        backgroundColor: ['rgba(59,130,246,0.7)', 'rgba(236,72,153,0.7)']
-      }]
-    },
+    data: { labels: ['Regular Draws', 'Snowball Draws'], datasets: [{ data: [avg(regSales), avg(snowSales)], backgroundColor: ['rgba(59,130,246,0.7)', 'rgba(236,72,153,0.7)'] }] },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        tooltip: { callbacks: { label: ctx => 'Avg sales: HK$ ' + fmtNum(Math.round(ctx.raw)) } }
+        tooltip: { callbacks: { label: function (ctx) { return 'Avg sales: HK$ ' + fmtNum(Math.round(ctx.raw)); } } }
       },
       scales: {
         x: { ticks: { color: '#8b9cb3' }, grid: { display: false } },
-        y: { ticks: { color: '#8b9cb3', callback: v => (v/1e6).toFixed(0) + 'M' }, grid: { color: 'rgba(45,58,79,0.5)' } }
+        y: { ticks: { color: '#8b9cb3', callback: function (v) { return (v / 1e6).toFixed(0) + 'M'; } }, grid: { color: 'rgba(45,58,79,0.5)' } }
       }
     }
   });
 
-  // Sales by DOW
-  const dowSales = { 0:[],1:[],2:[],3:[],4:[],5:[],6:[] };
-  draws.forEach(d => { if (d.sales) dowSales[d.dow].push(d.sales); });
-  const dowMap = { 0:'Sun',1:'Mon',2:'Tue',3:'Wed',4:'Thu',5:'Fri',6:'Sat' };
+  var dowSales = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
+  draws.forEach(function (d) { if (d.sales) dowSales[d.dow].push(d.sales); });
+  var dowMap = { 0: 'Sun', 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat' };
   if (charts.salesDow) charts.salesDow.destroy();
   charts.salesDow = new Chart(document.getElementById('salesDowChart'), {
     type: 'bar',
-    data: {
-      labels: [0,1,2,3,4,5,6].map(d => dowMap[d]),
-      datasets: [{
-        data: [0,1,2,3,4,5,6].map(d => avg(dowSales[d])),
-        backgroundColor: 'rgba(139,92,246,0.7)'
-      }]
-    },
+    data: { labels: [0,1,2,3,4,5,6].map(function (d) { return dowMap[d]; }), datasets: [{ data: [0,1,2,3,4,5,6].map(function (d) { return avg(dowSales[d]); }), backgroundColor: 'rgba(139,92,246,0.7)' }] },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
         x: { ticks: { color: '#8b9cb3' }, grid: { display: false } },
-        y: { ticks: { color: '#8b9cb3', callback: v => (v/1e6).toFixed(0) + 'M' }, grid: { color: 'rgba(45,58,79,0.5)' } }
+        y: { ticks: { color: '#8b9cb3', callback: function (v) { return (v / 1e6).toFixed(0) + 'M'; } }, grid: { color: 'rgba(45,58,79,0.5)' } }
       }
     }
   });
@@ -1296,115 +1281,82 @@ function buildSales() {
 
 /* ========== Insights ========== */
 function buildInsights() {
-  const n = draws.length;
-  const freq = Array(50).fill(0);
-  draws.forEach(d => d.balls.forEach(b => freq[b]++));
-  const hits = freq.slice(1);
-  const mean = hits.reduce((a, b) => a + b, 0) / 49;
-  const variance = hits.reduce((a, b) => a + (b - mean) ** 2, 0) / 49;
-  const chi2 = hits.reduce((a, b) => a + (b - mean) ** 2 / mean, 0);
-  // chi2 critical value for df=48, α=0.05 ≈ 65.17; α=0.01 ≈ 73.68 (approx)
-  const uniform = chi2 < 65.2;
+  var n = draws.length;
+  var freq = Array(50).fill(0);
+  draws.forEach(function (d) { d.balls.forEach(function (b) { freq[b]++; }); });
+  var hits = freq.slice(1);
+  var mean = hits.reduce(function (a, b) { return a + b; }, 0) / 49;
+  var chi2 = hits.reduce(function (a, b) { return a + Math.pow(b - mean, 2) / mean; }, 0);
+  var uniform = chi2 < 65.2;
 
-  const sums = draws.map(d => d.balls.reduce((a, b) => a + b, 0));
-  const meanSum = sums.reduce((a, b) => a + b, 0) / n;
-  const theoSum = 6 * 25; // average of 1..49 is 25
+  var sums = draws.map(function (d) { return d.balls.reduce(function (a, b) { return a + b; }, 0); });
+  var meanSum = sums.reduce(function (a, b) { return a + b; }, 0) / n;
+  var theoSum = 150;
 
-  const oddCounts = draws.map(d => d.balls.filter(b => b % 2).length);
-  const meanOdd = oddCounts.reduce((a, b) => a + b, 0) / n;
+  var oddCounts = draws.map(function (d) { return d.balls.filter(function (b) { return b % 2; }).length; });
+  var meanOdd = oddCounts.reduce(function (a, b) { return a + b; }, 0) / n;
 
-  const consecRate = draws.filter(d => {
-    for (let i = 1; i < 6; i++) if (d.balls[i] === d.balls[i-1] + 1) return true;
+  var consecRate = draws.filter(function (d) {
+    for (var i = 1; i < 6; i++) if (d.balls[i] === d.balls[i - 1] + 1) return true;
     return false;
   }).length / n;
 
-  const snow = draws.filter(d => d.isSnow);
-  const reg = draws.filter(d => !d.isSnow);
-  const avgSnowSales = snow.filter(d => d.sales).reduce((a, d) => a + d.sales, 0) / (snow.filter(d => d.sales).length || 1);
-  const avgRegSales = reg.filter(d => d.sales).reduce((a, d) => a + d.sales, 0) / (reg.filter(d => d.sales).length || 1);
-
-  const ranked = hits.map((h, i) => ({ n: i + 1, h })).sort((a, b) => b.h - a.h);
-  const hottest = ranked.slice(0, 5).map(x => x.n).join(', ');
-  const coldest = ranked.slice(-5).map(x => x.n).join(', ');
-
-  // Simple serial correlation proxy: consecutive draw overlap
-  let overlapSum = 0;
-  for (let i = 0; i < draws.length - 1; i++) {
-    const set = new Set(draws[i].balls);
-    overlapSum += draws[i + 1].balls.filter(b => set.has(b)).length;
+  var snow = draws.filter(function (d) { return d.isSnow; });
+  var reg = draws.filter(function (d) { return !d.isSnow; });
+  function avgSales(arr) {
+    var s = arr.filter(function (d) { return d.sales; });
+    return s.length ? s.reduce(function (a, d) { return a + d.sales; }, 0) / s.length : 0;
   }
-  const avgOverlap = overlapSum / (draws.length - 1);
-  // Expected overlap under independence ≈ 6 * 6 / 49 ≈ 0.735
+  var avgSnowSales = avgSales(snow);
+  var avgRegSales = avgSales(reg);
 
-  document.getElementById('insightsContent').innerHTML = `
-    <h3 style="margin-bottom:16px;">Executive Summary – 49-Ball Era (${fmtDate(draws[draws.length-1].date)} → ${fmtDate(draws[0].date)})</h3>
+  var ranked = hits.map(function (h, i) { return { n: i + 1, h: h }; }).sort(function (a, b) { return b.h - a.h; });
+  var hottest = ranked.slice(0, 5).map(function (x) { return x.n; }).join(', ');
+  var coldest = ranked.slice(-5).map(function (x) { return x.n; }).join(', ');
 
-    <div class="insight">
-      <strong>Sample size & scope</strong><br>
-      ${fmtNum(n)} draws after the July 2002 expansion to 49 numbers. This is the statistically relevant population for modern Mark Six modelling. Pre-2002 data (different pool sizes) is excluded to avoid mixing heterogeneous generating processes.
-    </div>
+  var overlapSum = 0;
+  for (var i = 0; i < draws.length - 1; i++) {
+    var set = {};
+    draws[i].balls.forEach(function (b) { set[b] = true; });
+    overlapSum += draws[i + 1].balls.filter(function (b) { return set[b]; }).length;
+  }
+  var avgOverlap = overlapSum / (draws.length - 1);
 
-    <div class="insight ${uniform ? 'info' : 'warn'}">
-      <strong>Uniformity of main numbers</strong><br>
-      Chi-square statistic ≈ ${chi2.toFixed(1)} (df = 48). 
-      ${uniform
-        ? 'The observed frequencies are consistent with a uniform random draw at the 5% significance level. No strong evidence of long-run bias toward particular numbers.'
-        : 'The frequencies deviate from perfect uniformity at conventional significance levels. This can arise from finite-sample variation, machine changes, or genuine small biases; interpret with caution and prefer recent windows for short-term modelling.'}
-      Observed hit range: ${Math.min(...hits)} – ${Math.max(...hits)} (expected ≈ ${mean.toFixed(1)}).
-    </div>
-
-    <div class="insight info">
-      <strong>Hot / Cold snapshot</strong><br>
-      Most frequent: <strong>${hottest}</strong>. Least frequent: <strong>${coldest}</strong>.
-      “Hot” and “cold” labels are descriptive only. Under a fair lottery the expected waiting time for any specific number is geometric with success probability 6/49 ≈ 12.2% per draw; long gaps are normal.
-    </div>
-
-    <div class="insight">
-      <strong>Sum of main numbers</strong><br>
-      Mean sum = <strong>${meanSum.toFixed(1)}</strong> (theoretical mean under uniform sampling without replacement ≈ ${theoSum}).
-      The distribution is roughly unimodal and centred near the theoretical value, consistent with random selection.
-    </div>
-
-    <div class="insight">
-      <strong>Odd / Even balance</strong><br>
-      Average number of odd main balls per draw ≈ <strong>${meanOdd.toFixed(2)}</strong> (theoretical ≈ 3.06 given 25 odd / 24 even numbers).
-      The classic 3-odd / 3-even combination remains the modal outcome, as expected from the hypergeometric-like composition of the urn.
-    </div>
-
-    <div class="insight">
-      <strong>Consecutive numbers</strong><br>
-      Approximately <strong>${(consecRate * 100).toFixed(1)}%</strong> of draws contain at least one consecutive pair (e.g. 12-13). This is a common natural pattern and does not indicate dependence between successive draws.
-    </div>
-
-    <div class="insight">
-      <strong>Draw-to-draw overlap</strong><br>
-      Average number of shared main numbers between consecutive draws ≈ <strong>${avgOverlap.toFixed(2)}</strong>
-      (theoretical under independence ≈ 0.73). Values close to the theoretical expectation support the assumption that successive draws are effectively independent.
-    </div>
-
-    <div class="insight">
-      <strong>Snowball economics</strong><br>
-      Snowball draws (${snow.length} in sample) generate substantially higher turnover: average sales ≈ HK$ ${fmtNum(Math.round(avgSnowSales))} versus HK$ ${fmtNum(Math.round(avgRegSales))} for regular draws
-      (≈ ${(avgSnowSales / (avgRegSales || 1)).toFixed(1)}×). Large jackpots and marketing around festival / anniversary snowballs drive participation spikes.
-    </div>
-
-    <div class="insight warn">
-      <strong>Analytical caveats (professional notes)</strong><br>
-      • Lottery draws are designed to be i.i.d. uniform; any apparent “pattern” should be treated as sample noise unless it survives rigorous out-of-sample testing.<br>
-      • Machine changes (e.g. 4th → 5th generation around 2026) can theoretically alter microscopic physical biases; consider segmenting analysis if a new machine period is of interest.<br>
-      • Pair lift statistics and rolling windows are exploratory. They are useful for describing the realised sample but are weak predictors of future draws.<br>
-      • Sales and jackpot series are non-stationary (inflation, unit-bet changes, marketing). Use log-transforms or year-fixed effects for formal econometric work.
-    </div>
-
-    <div class="insight info">
-      <strong>Recommended next steps for deeper analysis</strong><br>
-      1. Segment by drawing machine generation if metadata becomes available.<br>
-      2. Formal runs tests / autocorrelation tests on the binary presence series of each number.<br>
-      3. Bootstrap confidence intervals for pair frequencies and colour shares.<br>
-      4. Time-series models of total_sales (ARIMA / regression with snowball dummies and day-of-week effects).<br>
-      5. Prize-tier winner counts (if available in an extended schema) for expected-value calculations.
-    </div>
-  `;
+  document.getElementById('insightsContent').innerHTML =
+    '<h3 style="margin-bottom:16px;">Executive Summary – 49-Ball Era (' + fmtDate(draws[draws.length - 1].date) + ' → ' + fmtDate(draws[0].date) + ')</h3>' +
+    '<div class="insight"><strong>Sample size & scope</strong><br>' +
+    fmtNum(n) + ' draws after the July 2002 expansion to 49 numbers. Pre-2002 data is excluded so the generating process is homogeneous.</div>' +
+    '<div class="insight ' + (uniform ? 'info' : 'warn') + '"><strong>Uniformity of main numbers</strong><br>' +
+    'Chi-square ≈ ' + chi2.toFixed(1) + ' (df = 48). ' +
+    (uniform
+      ? 'Frequencies are consistent with a uniform random draw at the 5% level. No strong evidence of long-run bias.'
+      : 'Frequencies deviate from perfect uniformity at conventional significance levels. Treat as finite-sample variation unless it persists out-of-sample.') +
+    ' Observed hit range: ' + Math.min.apply(null, hits) + ' – ' + Math.max.apply(null, hits) + ' (expected ≈ ' + mean.toFixed(1) + ').</div>' +
+    '<div class="insight info"><strong>Hot / Cold snapshot</strong><br>' +
+    'Most frequent: <strong>' + hottest + '</strong>. Least frequent: <strong>' + coldest + '</strong>. ' +
+    'Labels are descriptive only; expected waiting time for any number is geometric with p ≈ 12.2% per draw.</div>' +
+    '<div class="insight"><strong>Sum of main numbers</strong><br>' +
+    'Mean sum = <strong>' + meanSum.toFixed(1) + '</strong> (theoretical ≈ ' + theoSum + '). Distribution is roughly unimodal and centred near theory.</div>' +
+    '<div class="insight"><strong>Odd / Even balance</strong><br>' +
+    'Average odd main balls per draw ≈ <strong>' + meanOdd.toFixed(2) + '</strong> (theoretical ≈ 3.06). 3-odd / 3-even remains modal.</div>' +
+    '<div class="insight"><strong>Consecutive numbers</strong><br>' +
+    '≈ <strong>' + (consecRate * 100).toFixed(1) + '%</strong> of draws contain at least one consecutive pair. Normal under random selection.</div>' +
+    '<div class="insight"><strong>Draw-to-draw overlap</strong><br>' +
+    'Average shared main numbers between consecutive draws ≈ <strong>' + avgOverlap.toFixed(2) + '</strong> (theoretical ≈ 0.73). Supports independence of successive draws.</div>' +
+    '<div class="insight"><strong>Snowball economics</strong><br>' +
+    'Snowball draws (' + snow.length + ') average sales ≈ HK$ ' + fmtNum(Math.round(avgSnowSales)) +
+    ' vs HK$ ' + fmtNum(Math.round(avgRegSales)) + ' for regular (≈ ' + (avgRegSales ? (avgSnowSales / avgRegSales).toFixed(1) : '—') + '×).</div>' +
+    '<div class="insight warn"><strong>Analytical caveats</strong><br>' +
+    '• Lottery draws are designed i.i.d. uniform; apparent patterns are usually sample noise.<br>' +
+    '• Machine changes can alter microscopic biases; segment if a new machine period is of interest.<br>' +
+    '• Pair lift and rolling windows are exploratory, not predictive.<br>' +
+    '• Sales/jackpot series are non-stationary (inflation, unit-bet changes).</div>' +
+    '<div class="insight info"><strong>Recommended next steps</strong><br>' +
+    '1. Segment by drawing-machine generation if metadata is available.<br>' +
+    '2. Runs / autocorrelation tests on binary presence series per number.<br>' +
+    '3. Bootstrap CIs for pair frequencies and colour shares.<br>' +
+    '4. Time-series models of total_sales with snowball and weekday effects.<br>' +
+    '5. Prize-tier counts (if in an extended schema) for EV calculations.</div>';
 }
 </script>
 </body>
