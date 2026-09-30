@@ -491,10 +491,30 @@
           </div>
         </div>
       </div>
+      <div class="section-title" style="margin-top:8px;">Full Match Including Extra Ball (0–7)</div>
+      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:12px;">
+        Shared count among the 6 main numbers + extra ball (max 7 = identical set). Compared for consecutive draws and a random sample of non-adjacent pairs.
+      </p>
+      <div class="grid grid-2">
+        <div class="card">
+          <h3><span class="icon">🔗</span> Consecutive – Main + Extra</h3>
+          <div class="chart-wrap short"><canvas id="fullOverlapChart"></canvas></div>
+        </div>
+        <div class="card">
+          <h3><span class="icon">🎲</span> Random Pairs – Main + Extra</h3>
+          <div class="chart-wrap short"><canvas id="fullRandomOverlapChart"></canvas></div>
+        </div>
+      </div>
       <div class="card" style="margin-top:20px;">
-        <h3><span class="icon">7️⃣</span> Full Match Including Extra Ball (0–7)</h3>
-        <p style="font-size:0.8rem;color:var(--muted);margin-bottom:8px;">Shared count among the 6 main + extra (max 7). Consecutive draws only.</p>
-        <div class="chart-wrap short"><canvas id="fullOverlapChart"></canvas></div>
+        <h3><span class="icon">📊</span> Full Overlap Summary (Main + Extra)</h3>
+        <div class="table-scroll" style="max-height:320px;">
+          <table id="fullOverlapSummaryTable">
+            <thead>
+              <tr><th>Shared</th><th>Consecutive pairs</th><th>Consec %</th><th>Random sample %</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -1245,8 +1265,9 @@ function buildDrawSimilarity() {
   }
   var consecTotal = n - 1;
 
-  // Random sample of unordered pairs
+  // Random sample of unordered pairs (main + full)
   var randomHist = [0, 0, 0, 0, 0, 0, 0];
+  var fullRandomHist = [0, 0, 0, 0, 0, 0, 0, 0];
   var sampleSize = Math.min(50000, Math.floor(n * (n - 1) / 2));
   var randomHigh = [];
   // Deterministic-ish sampling for reproducibility
@@ -1256,6 +1277,8 @@ function buildDrawSimilarity() {
     for (var b = a + 1; b < n && sampled < sampleSize; b += (a % 7 === 0 ? 1 : Math.max(1, step))) {
       var s2 = sharedMainCount(chrono[a].balls, chrono[b].balls);
       randomHist[s2]++;
+      var sf = sharedFullCount(chrono[a], chrono[b]);
+      fullRandomHist[sf]++;
       if (s2 >= 4) {
         var common2 = chrono[a].balls.filter(function (x) { return chrono[b].balls.indexOf(x) !== -1; });
         randomHigh.push({
@@ -1339,11 +1362,12 @@ function buildDrawSimilarity() {
     }
   });
 
+  var labels07 = ['0', '1', '2', '3', '4', '5', '6', '7'];
   if (charts.fullOverlap) charts.fullOverlap.destroy();
   charts.fullOverlap = new Chart(document.getElementById('fullOverlapChart'), {
     type: 'bar',
     data: {
-      labels: ['0', '1', '2', '3', '4', '5', '6', '7'],
+      labels: labels07,
       datasets: [{
         label: 'Consecutive (main+extra)',
         data: fullHist,
@@ -1369,7 +1393,37 @@ function buildDrawSimilarity() {
     }
   });
 
-  // Summary table
+  if (charts.fullRandomOverlap) charts.fullRandomOverlap.destroy();
+  charts.fullRandomOverlap = new Chart(document.getElementById('fullRandomOverlapChart'), {
+    type: 'bar',
+    data: {
+      labels: labels07,
+      datasets: [{
+        label: 'Random pairs (main+extra)',
+        data: fullRandomHist,
+        backgroundColor: 'rgba(236,72,153,0.75)'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            afterLabel: function (ctx) {
+              return (100 * ctx.raw / randomTotal).toFixed(2) + '% of sample';
+            }
+          }
+        }
+      },
+      scales: {
+        x: { title: { display: true, text: 'Shared balls (6 main + extra)', color: '#8b9cb3' }, ticks: { color: '#8b9cb3' }, grid: { display: false } },
+        y: { ticks: { color: '#8b9cb3' }, grid: { color: 'rgba(45,58,79,0.5)' } }
+      }
+    }
+  });
+
+  // Main-number summary table
   var tbody = document.querySelector('#overlapSummaryTable tbody');
   tbody.innerHTML = labels06.map(function (lab, k) {
     var theo = theoreticalOverlapPct(k);
@@ -1381,6 +1435,19 @@ function buildDrawSimilarity() {
       '<td>' + theo.toFixed(2) + '%</td>' +
       '</tr>';
   }).join('');
+
+  // Full (main+extra) summary table
+  var fullBody = document.querySelector('#fullOverlapSummaryTable tbody');
+  if (fullBody) {
+    fullBody.innerHTML = labels07.map(function (lab, k) {
+      return '<tr>' +
+        '<td><strong>' + k + '</strong></td>' +
+        '<td>' + fmtNum(fullHist[k]) + '</td>' +
+        '<td>' + (100 * fullHist[k] / consecTotal).toFixed(2) + '%</td>' +
+        '<td>' + (100 * fullRandomHist[k] / randomTotal).toFixed(2) + '%</td>' +
+        '</tr>';
+    }).join('');
+  }
 
   // Most similar pairs: consecutive with high overlap + random high
   var allHigh = consecPairs.concat(randomHigh)
