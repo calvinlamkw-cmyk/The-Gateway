@@ -516,6 +516,51 @@
           </table>
         </div>
       </div>
+
+      <div class="section-title" style="margin-top:28px;">Recurring Number Patterns (Across All Draws)</div>
+      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:12px;">
+        A <strong>pattern of size k</strong> is any set of k main numbers that appears together inside a draw’s 6 main balls.
+        Example: pattern {1,2,3,4} is counted once for every draw whose main numbers contain at least those four.
+        Ranked by how many draws contain each pattern. Expected frequency under randomness ≈ C(43, 6−k) / C(49, 6) × N draws.
+      </p>
+      <div class="filter-row" style="margin-bottom:16px;">
+        <label>Pattern size (k):</label>
+        <select id="patternSizeSelect">
+          <option value="3">3 numbers (triplets)</option>
+          <option value="4" selected>4 numbers (quadruplets)</option>
+          <option value="5">5 numbers (quintuplets)</option>
+          <option value="6">6 numbers (exact main set)</option>
+        </select>
+        <label style="margin-left:12px;">Min draws:</label>
+        <select id="patternMinSelect">
+          <option value="2">2+</option>
+          <option value="3" selected>3+</option>
+          <option value="4">4+</option>
+          <option value="5">5+</option>
+          <option value="10">10+</option>
+        </select>
+        <button class="btn" style="margin-top:0;padding:6px 14px;" onclick="buildPatternFrequency()">Update</button>
+      </div>
+      <div class="grid grid-2">
+        <div class="card">
+          <h3><span class="icon">🏆</span> Most Common Patterns</h3>
+          <div id="patternStats" style="font-size:0.85rem;color:var(--muted);margin-bottom:10px;"></div>
+          <div class="table-scroll" style="max-height:420px;">
+            <table id="patternTable">
+              <thead>
+                <tr><th>Rank</th><th>Pattern</th><th>Draws</th><th>% of draws</th><th>Expected</th><th>Lift</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <h3><span class="icon">📈</span> Pattern Frequency Distribution</h3>
+          <p style="font-size:0.8rem;color:var(--muted);margin-bottom:8px;">How many patterns appear in exactly m draws (m ≥ min filter).</p>
+          <div class="chart-wrap"><canvas id="patternDistChart"></canvas></div>
+          <div id="patternExamples" style="margin-top:16px;font-size:0.85rem;"></div>
+        </div>
+      </div>
     </div>
 
     <!-- TRENDS -->
@@ -1206,6 +1251,7 @@ function buildCorrelation() {
 
   // ----- Draw-to-draw similarity -----
   buildDrawSimilarity();
+  buildPatternFrequency();
 }
 
 function sharedMainCount(a, b) {
@@ -1476,6 +1522,163 @@ function buildDrawSimilarity() {
       '<td>' + p.relation + '</td>' +
       '</tr>';
   }).join('') || '<tr><td colspan="5">No pairs with 3+ shared numbers found in sample.</td></tr>';
+}
+
+/* ========== Recurring patterns across all draws ========== */
+function combinations(arr, k) {
+  var result = [];
+  function helper(start, path) {
+    if (path.length === k) {
+      result.push(path.slice());
+      return;
+    }
+    for (var i = start; i < arr.length; i++) {
+      path.push(arr[i]);
+      helper(i + 1, path);
+      path.pop();
+    }
+  }
+  helper(0, []);
+  return result;
+}
+
+function comb(n, r) {
+  if (r < 0 || r > n) return 0;
+  if (r === 0 || r === n) return 1;
+  var res = 1;
+  for (var i = 1; i <= r; i++) res = res * (n - r + i) / i;
+  return res;
+}
+
+function buildPatternFrequency() {
+  if (!draws || !draws.length) return;
+  var kSel = document.getElementById('patternSizeSelect');
+  var minSel = document.getElementById('patternMinSelect');
+  var k = kSel ? Number(kSel.value) : 4;
+  var minDraws = minSel ? Number(minSel.value) : 3;
+  if (k < 3 || k > 6) k = 4;
+
+  var N = draws.length;
+  // Count how many draws contain each k-subset of main numbers
+  var counts = {};
+  draws.forEach(function (d) {
+    var combs = combinations(d.balls, k);
+    // unique within a draw (already unique since balls are unique)
+    var seen = {};
+    combs.forEach(function (c) {
+      var key = c.join('-');
+      if (seen[key]) return;
+      seen[key] = true;
+      counts[key] = (counts[key] || 0) + 1;
+    });
+  });
+
+  // Expected: probability a fixed k-set is subset of a random 6-from-49
+  // = C(49-k, 6-k) / C(49, 6) for k <= 6
+  var pContain = (k <= 6) ? comb(49 - k, 6 - k) / comb(49, 6) : 0;
+  var expected = N * pContain;
+
+  var list = Object.keys(counts).map(function (key) {
+    return { key: key, nums: key.split('-').map(Number), count: counts[key] };
+  }).filter(function (x) { return x.count >= minDraws; })
+    .sort(function (a, b) { return b.count - a.count || a.key.localeCompare(b.key); });
+
+  var totalPatterns = Object.keys(counts).length;
+  var aboveMin = list.length;
+  var maxCount = list.length ? list[0].count : 0;
+
+  var statsEl = document.getElementById('patternStats');
+  if (statsEl) {
+    statsEl.innerHTML =
+      'Pattern size <strong>k = ' + k + '</strong> · ' +
+      'Unique patterns observed: <strong>' + fmtNum(totalPatterns) + '</strong> · ' +
+      'With ≥' + minDraws + ' draws: <strong>' + fmtNum(aboveMin) + '</strong> · ' +
+      'Max frequency: <strong>' + maxCount + '</strong> draws · ' +
+      'Expected per pattern ≈ <strong>' + expected.toFixed(2) + '</strong> draws ' +
+      '(p ≈ ' + (pContain * 100).toFixed(4) + '%)';
+  }
+
+  var tbody = document.querySelector('#patternTable tbody');
+  if (tbody) {
+    var top = list.slice(0, 50);
+    tbody.innerHTML = top.length ? top.map(function (p, i) {
+      var pct = (100 * p.count / N).toFixed(2);
+      var lift = expected > 0 ? (p.count / expected) : 0;
+      var liftColor = lift > 1.3 ? '#4ade80' : lift < 0.7 ? '#f87171' : 'inherit';
+      return '<tr>' +
+        '<td>' + (i + 1) + '</td>' +
+        '<td>' + p.nums.map(function (n) { return ballHtml(n); }).join('') + '</td>' +
+        '<td><strong>' + p.count + '</strong></td>' +
+        '<td>' + pct + '%</td>' +
+        '<td>' + expected.toFixed(2) + '</td>' +
+        '<td style="color:' + liftColor + '">' + lift.toFixed(2) + '×</td>' +
+        '</tr>';
+    }).join('') : '<tr><td colspan="6">No patterns with ≥' + minDraws + ' draws for k=' + k + '.</td></tr>';
+  }
+
+  // Distribution: how many patterns appear in exactly m draws
+  var dist = {};
+  list.forEach(function (p) {
+    dist[p.count] = (dist[p.count] || 0) + 1;
+  });
+  var distKeys = Object.keys(dist).map(Number).sort(function (a, b) { return a - b; });
+  if (charts.patternDist) charts.patternDist.destroy();
+  var canvas = document.getElementById('patternDistChart');
+  if (canvas) {
+    charts.patternDist = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: distKeys.map(String),
+        datasets: [{
+          label: 'Number of patterns',
+          data: distKeys.map(function (m) { return dist[m]; }),
+          backgroundColor: 'rgba(139,92,246,0.75)'
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: {
+            title: { display: true, text: 'Appears in exactly m draws', color: '#8b9cb3' },
+            ticks: { color: '#8b9cb3' }, grid: { display: false }
+          },
+          y: {
+            title: { display: true, text: 'Count of patterns', color: '#8b9cb3' },
+            ticks: { color: '#8b9cb3' }, grid: { color: 'rgba(45,58,79,0.5)' }
+          }
+        }
+      }
+    });
+  }
+
+  // Example: show top pattern with draw count explanation
+  var ex = document.getElementById('patternExamples');
+  if (ex && list.length) {
+    var topP = list[0];
+    // Find a few example draws containing this pattern
+    var examples = [];
+    for (var i = 0; i < draws.length && examples.length < 5; i++) {
+      var ok = topP.nums.every(function (n) { return draws[i].balls.indexOf(n) !== -1; });
+      if (ok) examples.push(draws[i]);
+    }
+    ex.innerHTML =
+      '<div class="insight info">' +
+      '<strong>Top pattern</strong> ' + topP.nums.map(function (n) { return ballHtml(n); }).join('') +
+      ' appears in <strong>' + topP.count + '</strong> draws (' + (100 * topP.count / N).toFixed(2) + '%).' +
+      (examples.length ? '<br>Examples: ' + examples.map(function (d) {
+        return fmtDate(d.date) + ' [' + d.balls.map(function (b) { return b; }).join(', ') + ']';
+      }).join('; ') : '') +
+      '</div>' +
+      '<div class="insight" style="margin-top:8px;">' +
+      '<strong>Definition</strong><br>' +
+      'Unlike pair-vs-pair similarity (which compares two specific draws), this view looks at the <em>entire history</em>. ' +
+      'Each pattern is a fixed set of k numbers; the count is how many draws contain that whole set as a subset of their 6 main numbers. ' +
+      'k=6 means the exact same 6 main numbers appeared again (order ignored).' +
+      '</div>';
+  } else if (ex) {
+    ex.innerHTML = '';
+  }
 }
 
 /* ========== Trends ========== */
