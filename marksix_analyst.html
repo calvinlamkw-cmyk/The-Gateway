@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mark Six Professional Analysis Dashboard | 49-Ball Era</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
@@ -287,7 +288,7 @@
 <div class="container">
   <header>
     <h1>Mark Six Professional Analysis Dashboard</h1>
-    <p>Upload the official HKJC Mark Six results CSV (same schema as data.hkjc.guru). Analysis is restricted to the modern <strong>6-from-49</strong> era (from July 2002 onward) for statistical validity.</p>
+    <p>Upload the official HKJC Mark Six results as <strong>CSV or Excel (.xlsx)</strong> (same schema as data.hkjc.guru). Analysis is restricted to the modern <strong>6-from-49</strong> era (from July 2002 onward) for statistical validity.</p>
     <span class="badge">Data Analyst &amp; Data Engineer Grade · Client-side · Privacy-first</span>
   </header>
 
@@ -295,10 +296,10 @@
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
     </svg>
-    <h3>Drop CSV here or click to browse</h3>
+    <h3>Drop CSV or Excel (.xlsx) here or click to browse</h3>
     <p>Expected columns: draw_id, draw_date, ball_1 … ball_6, extra_ball, total_sales, jackpot_amount, …</p>
-    <button class="btn" onclick="document.getElementById('fileInput').click()">Select CSV File</button>
-    <input type="file" id="fileInput" accept=".csv,text/csv">
+    <button class="btn" onclick="document.getElementById('fileInput').click()">Select CSV / Excel File</button>
+    <input type="file" id="fileInput" accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel">
   </div>
 
   <div class="status-bar" id="statusBar">
@@ -447,6 +448,54 @@
           </div>
         </div>
       </div>
+
+      <div class="section-title" style="margin-top:28px;">Draw-to-Draw Similarity (Shared Numbers)</div>
+      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:12px;">
+        How many main numbers (0–6) two draws have in common. “7” counts main + extra all matching.
+        Expected overlap under independence ≈ 6×6/49 ≈ 0.73 for main numbers only.
+      </p>
+      <div class="grid grid-2">
+        <div class="card">
+          <h3><span class="icon">🔀</span> Consecutive Draws – Shared Main Numbers</h3>
+          <div class="chart-wrap short"><canvas id="consecOverlapChart"></canvas></div>
+          <p style="font-size:0.8rem;color:var(--muted);margin-top:8px;">Overlap between draw <em>n</em> and draw <em>n+1</em> (chronological order).</p>
+        </div>
+        <div class="card">
+          <h3><span class="icon">🎲</span> Random Pair Sample – Shared Main Numbers</h3>
+          <div class="chart-wrap short"><canvas id="randomOverlapChart"></canvas></div>
+          <p style="font-size:0.8rem;color:var(--muted);margin-top:8px;">Up to 50,000 random unordered pairs for baseline distribution.</p>
+        </div>
+      </div>
+      <div class="grid grid-2" style="margin-top:20px;">
+        <div class="card">
+          <h3><span class="icon">📊</span> Overlap Summary (Main Numbers)</h3>
+          <div class="table-scroll" style="max-height:320px;">
+            <table id="overlapSummaryTable">
+              <thead>
+                <tr><th>Shared</th><th>Consecutive pairs</th><th>Consec %</th><th>Random sample %</th><th>Theoretical %</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <h3><span class="icon">🔥</span> Most Similar Draw Pairs (Main Numbers)</h3>
+          <p style="font-size:0.8rem;color:var(--muted);margin-bottom:8px;">Highest overlap among consecutive draws and a sample of non-adjacent pairs.</p>
+          <div class="table-scroll" style="max-height:320px;">
+            <table id="similarPairsTable">
+              <thead>
+                <tr><th>Shared</th><th>Draw A</th><th>Draw B</th><th>Numbers in common</th><th>Relation</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:20px;">
+        <h3><span class="icon">7️⃣</span> Full Match Including Extra Ball (0–7)</h3>
+        <p style="font-size:0.8rem;color:var(--muted);margin-bottom:8px;">Shared count among the 6 main + extra (max 7). Consecutive draws only.</p>
+        <div class="chart-wrap short"><canvas id="fullOverlapChart"></canvas></div>
+      </div>
     </div>
 
     <!-- TRENDS -->
@@ -588,12 +637,13 @@ fileInput.addEventListener('change', function () {
 function handleFile(file) {
   if (!file) return;
   var name = (file.name || '').toLowerCase();
-  if (name && !name.endsWith('.csv') && !name.endsWith('.txt') && file.type && file.type.indexOf('csv') === -1 && file.type.indexOf('text') === -1) {
-    showError('Please upload a .csv file (the Mark Six results export from data.hkjc.guru).');
-    return;
-  }
-  if (typeof Papa === 'undefined') {
-    showError('Papa Parse library failed to load. Check your network connection and reload the page.');
+  var isExcel = name.endsWith('.xlsx') || name.endsWith('.xls') ||
+    (file.type && (file.type.indexOf('spreadsheet') !== -1 || file.type.indexOf('excel') !== -1));
+  var isCsv = name.endsWith('.csv') || name.endsWith('.txt') ||
+    (file.type && (file.type.indexOf('csv') !== -1 || file.type.indexOf('text') !== -1));
+
+  if (name && !isExcel && !isCsv) {
+    showError('Please upload a .csv or .xlsx file (Mark Six results export).');
     return;
   }
 
@@ -603,6 +653,18 @@ function handleFile(file) {
   if (errBox) errBox.style.display = 'none';
   zone.style.display = 'none';
 
+  if (isExcel) {
+    parseExcel(file);
+  } else {
+    parseCsv(file);
+  }
+}
+
+function parseCsv(file) {
+  if (typeof Papa === 'undefined') {
+    showError('Papa Parse library failed to load. Check your network connection and reload the page.');
+    return;
+  }
   Papa.parse(file, {
     header: true,
     dynamicTyping: false,
@@ -627,6 +689,50 @@ function handleFile(file) {
       showError('CSV parse error: ' + (err && err.message ? err.message : String(err)));
     }
   });
+}
+
+function parseExcel(file) {
+  if (typeof XLSX === 'undefined') {
+    showError('SheetJS (XLSX) library failed to load. Check your network connection and reload the page.');
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    try {
+      var data = new Uint8Array(e.target.result);
+      var workbook = XLSX.read(data, { type: 'array', cellDates: false, raw: false });
+      var sheetName = workbook.SheetNames[0];
+      if (!sheetName) throw new Error('Excel file has no sheets.');
+      var sheet = workbook.Sheets[sheetName];
+      // header: 1 → array of arrays; then convert first row to keys
+      var rows = XLSX.utils.sheet_to_json(sheet, {
+        defval: '',
+        raw: false,
+        blankrows: false
+      });
+      if (!rows || !rows.length) {
+        throw new Error('Excel sheet appears empty or could not be parsed.');
+      }
+      // Normalise header keys (trim / BOM)
+      rows = rows.map(function (r) {
+        var out = {};
+        Object.keys(r).forEach(function (k) {
+          out[String(k).replace(/^\uFEFF/, '').trim()] = r[k];
+        });
+        return out;
+      });
+      console.log('Excel sheet:', sheetName, 'rows:', rows.length, 'columns:', Object.keys(rows[0] || {}));
+      processData(rows);
+    } catch (err) {
+      console.error(err);
+      showError(err.message || String(err));
+      document.getElementById('loading').style.display = 'none';
+    }
+  };
+  reader.onerror = function () {
+    showError('Failed to read the Excel file.');
+  };
+  reader.readAsArrayBuffer(file);
 }
 
 function resetApp() {
@@ -1077,6 +1183,232 @@ function buildCorrelation() {
   document.querySelector('#extraAssocTable tbody').innerHTML = ea.map(function (x) {
     return '<tr><td>' + ballHtml(x.m) + '</td><td>' + ballHtml(x.e, true) + '</td><td>' + x.c + '</td></tr>';
   }).join('');
+
+  // ----- Draw-to-draw similarity -----
+  buildDrawSimilarity();
+}
+
+function sharedMainCount(a, b) {
+  var set = {};
+  for (var i = 0; i < a.length; i++) set[a[i]] = true;
+  var c = 0;
+  for (var j = 0; j < b.length; j++) if (set[b[j]]) c++;
+  return c;
+}
+
+function sharedFullCount(da, db) {
+  // 6 main + extra as a set of up to 7
+  var set = {};
+  da.balls.forEach(function (n) { set[n] = true; });
+  if (da.extra != null) set[da.extra] = true;
+  var c = 0;
+  db.balls.forEach(function (n) { if (set[n]) c++; });
+  if (db.extra != null && set[db.extra]) c++;
+  return c;
+}
+
+// Hypergeometric-style theoretical P(K=k) for 6 drawn from 49 vs another independent 6
+function theoreticalOverlapPct(k) {
+  // P(K=k) = C(6,k)*C(43,6-k) / C(49,6)  for k=0..6 when second draw is independent
+  function comb(n, r) {
+    if (r < 0 || r > n) return 0;
+    if (r === 0 || r === n) return 1;
+    var res = 1;
+    for (var i = 1; i <= r; i++) res = res * (n - r + i) / i;
+    return res;
+  }
+  var total = comb(49, 6);
+  if (total === 0) return 0;
+  return 100 * comb(6, k) * comb(43, 6 - k) / total;
+}
+
+function buildDrawSimilarity() {
+  var chrono = draws.slice().reverse(); // oldest → newest
+  var n = chrono.length;
+
+  // Consecutive main-number overlap (0–6)
+  var consecHist = [0, 0, 0, 0, 0, 0, 0];
+  var consecPairs = [];
+  for (var i = 0; i < n - 1; i++) {
+    var s = sharedMainCount(chrono[i].balls, chrono[i + 1].balls);
+    consecHist[s]++;
+    if (s >= 3) {
+      var common = chrono[i].balls.filter(function (b) { return chrono[i + 1].balls.indexOf(b) !== -1; });
+      consecPairs.push({
+        shared: s,
+        a: chrono[i],
+        b: chrono[i + 1],
+        common: common,
+        relation: 'Consecutive'
+      });
+    }
+  }
+  var consecTotal = n - 1;
+
+  // Random sample of unordered pairs
+  var randomHist = [0, 0, 0, 0, 0, 0, 0];
+  var sampleSize = Math.min(50000, Math.floor(n * (n - 1) / 2));
+  var randomHigh = [];
+  // Deterministic-ish sampling for reproducibility
+  var step = Math.max(1, Math.floor((n * (n - 1) / 2) / sampleSize));
+  var sampled = 0;
+  for (var a = 0; a < n && sampled < sampleSize; a++) {
+    for (var b = a + 1; b < n && sampled < sampleSize; b += (a % 7 === 0 ? 1 : Math.max(1, step))) {
+      var s2 = sharedMainCount(chrono[a].balls, chrono[b].balls);
+      randomHist[s2]++;
+      if (s2 >= 4) {
+        var common2 = chrono[a].balls.filter(function (x) { return chrono[b].balls.indexOf(x) !== -1; });
+        randomHigh.push({
+          shared: s2,
+          a: chrono[a],
+          b: chrono[b],
+          common: common2,
+          relation: 'Non-adjacent'
+        });
+      }
+      sampled++;
+    }
+  }
+  var randomTotal = sampled || 1;
+
+  // Full (main + extra) consecutive overlap 0–7
+  var fullHist = [0, 0, 0, 0, 0, 0, 0, 0];
+  for (var i = 0; i < n - 1; i++) {
+    fullHist[sharedFullCount(chrono[i], chrono[i + 1])]++;
+  }
+
+  // Charts
+  var labels06 = ['0', '1', '2', '3', '4', '5', '6'];
+  if (charts.consecOverlap) charts.consecOverlap.destroy();
+  charts.consecOverlap = new Chart(document.getElementById('consecOverlapChart'), {
+    type: 'bar',
+    data: {
+      labels: labels06,
+      datasets: [{
+        label: 'Consecutive pairs',
+        data: consecHist,
+        backgroundColor: 'rgba(59,130,246,0.75)'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            afterLabel: function (ctx) {
+              return (100 * ctx.raw / consecTotal).toFixed(2) + '% of consecutive pairs';
+            }
+          }
+        }
+      },
+      scales: {
+        x: { title: { display: true, text: 'Shared main numbers', color: '#8b9cb3' }, ticks: { color: '#8b9cb3' }, grid: { display: false } },
+        y: { ticks: { color: '#8b9cb3' }, grid: { color: 'rgba(45,58,79,0.5)' } }
+      }
+    }
+  });
+
+  if (charts.randomOverlap) charts.randomOverlap.destroy();
+  charts.randomOverlap = new Chart(document.getElementById('randomOverlapChart'), {
+    type: 'bar',
+    data: {
+      labels: labels06,
+      datasets: [{
+        label: 'Random pairs',
+        data: randomHist,
+        backgroundColor: 'rgba(16,185,129,0.75)'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            afterLabel: function (ctx) {
+              return (100 * ctx.raw / randomTotal).toFixed(2) + '% of sample';
+            }
+          }
+        }
+      },
+      scales: {
+        x: { title: { display: true, text: 'Shared main numbers', color: '#8b9cb3' }, ticks: { color: '#8b9cb3' }, grid: { display: false } },
+        y: { ticks: { color: '#8b9cb3' }, grid: { color: 'rgba(45,58,79,0.5)' } }
+      }
+    }
+  });
+
+  if (charts.fullOverlap) charts.fullOverlap.destroy();
+  charts.fullOverlap = new Chart(document.getElementById('fullOverlapChart'), {
+    type: 'bar',
+    data: {
+      labels: ['0', '1', '2', '3', '4', '5', '6', '7'],
+      datasets: [{
+        label: 'Consecutive (main+extra)',
+        data: fullHist,
+        backgroundColor: 'rgba(245,158,11,0.75)'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            afterLabel: function (ctx) {
+              return (100 * ctx.raw / consecTotal).toFixed(2) + '% of consecutive pairs';
+            }
+          }
+        }
+      },
+      scales: {
+        x: { title: { display: true, text: 'Shared balls (6 main + extra)', color: '#8b9cb3' }, ticks: { color: '#8b9cb3' }, grid: { display: false } },
+        y: { ticks: { color: '#8b9cb3' }, grid: { color: 'rgba(45,58,79,0.5)' } }
+      }
+    }
+  });
+
+  // Summary table
+  var tbody = document.querySelector('#overlapSummaryTable tbody');
+  tbody.innerHTML = labels06.map(function (lab, k) {
+    var theo = theoreticalOverlapPct(k);
+    return '<tr>' +
+      '<td><strong>' + k + '</strong></td>' +
+      '<td>' + fmtNum(consecHist[k]) + '</td>' +
+      '<td>' + (100 * consecHist[k] / consecTotal).toFixed(2) + '%</td>' +
+      '<td>' + (100 * randomHist[k] / randomTotal).toFixed(2) + '%</td>' +
+      '<td>' + theo.toFixed(2) + '%</td>' +
+      '</tr>';
+  }).join('');
+
+  // Most similar pairs: consecutive with high overlap + random high
+  var allHigh = consecPairs.concat(randomHigh)
+    .sort(function (x, y) {
+      if (y.shared !== x.shared) return y.shared - x.shared;
+      return 0;
+    });
+  // Deduplicate by draw id pair
+  var seen = {};
+  var unique = [];
+  allHigh.forEach(function (p) {
+    var key = [p.a.id, p.b.id].sort().join('|');
+    if (!seen[key]) {
+      seen[key] = true;
+      unique.push(p);
+    }
+  });
+  unique = unique.slice(0, 40);
+
+  document.querySelector('#similarPairsTable tbody').innerHTML = unique.map(function (p) {
+    return '<tr>' +
+      '<td><strong>' + p.shared + '</strong></td>' +
+      '<td>' + fmtDate(p.a.date) + '<br><span style="font-size:0.75rem;color:var(--muted)">' + p.a.id + '</span></td>' +
+      '<td>' + fmtDate(p.b.date) + '<br><span style="font-size:0.75rem;color:var(--muted)">' + p.b.id + '</span></td>' +
+      '<td>' + p.common.map(function (b) { return ballHtml(b); }).join('') + '</td>' +
+      '<td>' + p.relation + '</td>' +
+      '</tr>';
+  }).join('') || '<tr><td colspan="5">No pairs with 3+ shared numbers found in sample.</td></tr>';
 }
 
 /* ========== Trends ========== */
@@ -1341,8 +1673,9 @@ function buildInsights() {
     'Average odd main balls per draw ≈ <strong>' + meanOdd.toFixed(2) + '</strong> (theoretical ≈ 3.06). 3-odd / 3-even remains modal.</div>' +
     '<div class="insight"><strong>Consecutive numbers</strong><br>' +
     '≈ <strong>' + (consecRate * 100).toFixed(1) + '%</strong> of draws contain at least one consecutive pair. Normal under random selection.</div>' +
-    '<div class="insight"><strong>Draw-to-draw overlap</strong><br>' +
-    'Average shared main numbers between consecutive draws ≈ <strong>' + avgOverlap.toFixed(2) + '</strong> (theoretical ≈ 0.73). Supports independence of successive draws.</div>' +
+    '<div class="insight"><strong>Draw-to-draw similarity</strong><br>' +
+    'Average shared main numbers between consecutive draws ≈ <strong>' + avgOverlap.toFixed(2) + '</strong> (theoretical ≈ 0.73 under independence). ' +
+    'Full distributions for shared counts 0–6 (main) and 0–7 (main + extra), consecutive vs random pairs, and the most similar draw pairs are in the <strong>Correlation &amp; Pairs</strong> tab. Values close to theory support independence of successive draws.</div>' +
     '<div class="insight"><strong>Snowball economics</strong><br>' +
     'Snowball draws (' + snow.length + ') average sales ≈ HK$ ' + fmtNum(Math.round(avgSnowSales)) +
     ' vs HK$ ' + fmtNum(Math.round(avgRegSales)) + ' for regular (≈ ' + (avgRegSales ? (avgSnowSales / avgRegSales).toFixed(1) : '—') + '×).</div>' +
