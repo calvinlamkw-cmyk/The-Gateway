@@ -593,16 +593,16 @@
         <div class="table-scroll" style="max-height:220px;">
           <table>
             <thead>
-              <tr><th>Division</th><th>Match rule</th><th>Typical prize note</th></tr>
+              <tr><th>Division</th><th>Match rule</th><th>Weight used in score (HKD)</th></tr>
             </thead>
             <tbody>
-              <tr><td>1st</td><td>6 main numbers</td><td>Jackpot (pool, min ~HK$8M)</td></tr>
-              <tr><td>2nd</td><td>5 main + extra</td><td>Pool share</td></tr>
-              <tr><td>3rd</td><td>5 main</td><td>Pool share</td></tr>
-              <tr><td>4th</td><td>4 main + extra</td><td>Fixed HK$9,600</td></tr>
-              <tr><td>5th</td><td>4 main</td><td>Fixed HK$640</td></tr>
-              <tr><td>6th</td><td>3 main + extra</td><td>Fixed HK$320</td></tr>
-              <tr><td>7th</td><td>3 main</td><td>Fixed HK$40</td></tr>
+              <tr><td>1st</td><td>6 main numbers</td><td>22,000,000 (typical avg; pool varies, min fund ~8M)</td></tr>
+              <tr><td>2nd</td><td>5 main + extra</td><td>1,200,000 (typical avg)</td></tr>
+              <tr><td>3rd</td><td>5 main</td><td>75,000 (typical avg)</td></tr>
+              <tr><td>4th</td><td>4 main + extra</td><td>9,600 (fixed)</td></tr>
+              <tr><td>5th</td><td>4 main</td><td>640 (fixed)</td></tr>
+              <tr><td>6th</td><td>3 main + extra</td><td>320 (fixed)</td></tr>
+              <tr><td>7th</td><td>3 main</td><td>40 (fixed)</td></tr>
             </tbody>
           </table>
         </div>
@@ -617,8 +617,8 @@
         </select>
         <label style="margin-left:12px;">Rank by:</label>
         <select id="prizeRankSelect">
-          <option value="total" selected>Total prize hits (any division)</option>
-          <option value="weighted">Weighted score (1st…7th)</option>
+          <option value="weighted" selected>Est. prize value (HKD, typical amounts)</option>
+          <option value="total">Total prize hits (any division)</option>
           <option value="high">High tiers only (1st–3rd)</option>
         </select>
         <button class="btn" style="margin-top:0;padding:6px 14px;" onclick="buildPrizeSimulation()">Run simulation</button>
@@ -635,7 +635,7 @@
             <table id="bestTicketsTable">
               <thead>
                 <tr>
-                  <th>Rank</th><th>Ticket (6 numbers)</th><th>Total hits</th><th>1st</th><th>2nd</th><th>3rd</th><th>4th</th><th>5th</th><th>6th</th><th>7th</th><th>Score</th><th>Source</th>
+                  <th>Rank</th><th>Ticket (6 numbers)</th><th>Total hits</th><th>1st</th><th>2nd</th><th>3rd</th><th>4th</th><th>5th</th><th>6th</th><th>7th</th><th>Est. HKD value</th><th>Source</th>
                 </tr>
               </thead>
               <tbody></tbody>
@@ -1825,7 +1825,18 @@ function buildPatternFrequency() {
 
 /* ========== Prize simulation (HKJC divisions) ========== */
 // Weighted scores for ranking: emphasise higher tiers
-var PRIZE_WEIGHT = { 1: 100, 2: 50, 3: 20, 4: 10, 5: 5, 6: 3, 7: 1 };
+// Typical prize amounts (HKD) used as weights — pro-rata to real payout scale.
+// 4th–7th are fixed; 1st–3rd use representative long-run averages (pool prizes vary by draw).
+var PRIZE_WEIGHT = {
+  1: 22000000,  // ~typical 1st division (avg historical order)
+  2: 1200000,   // ~typical 2nd division
+  3: 75000,     // ~typical 3rd division
+  4: 9600,      // fixed
+  5: 640,       // fixed
+  6: 320,       // fixed
+  7: 40         // fixed
+};
+var PRIZE_WEIGHT_NOTE = 'Weights = typical HKD prize: 1st~$22M, 2nd~$1.2M, 3rd~$75k, 4th=$9.6k, 5th=$640, 6th=$320, 7th=$40';
 
 function scoreTicketAgainstDraw(ticket, draw) {
   // ticket: sorted array of 6 numbers
@@ -1899,7 +1910,7 @@ function renderExhaustivePrizeResults(data, rankBy) {
         '<td>' + (tiers[0] || 0) + '</td><td>' + (tiers[1] || 0) + '</td><td>' + (tiers[2] || 0) + '</td>' +
         '<td>' + (tiers[3] || 0) + '</td><td>' + (tiers[4] || 0) + '</td><td>' + (tiers[5] || 0) + '</td>' +
         '<td>' + (tiers[6] || 0) + '</td>' +
-        '<td>' + r.weighted + '</td><td>Exhaustive</td></tr>';
+        '<td><strong>' + fmtNum(r.weighted) + '</strong></td><td>Exhaustive</td></tr>';
     }).join('');
   }
   var never = data.never_examples || [];
@@ -1934,7 +1945,7 @@ function buildPrizeSimulation() {
   var candSel = document.getElementById('prizeCandidateSelect');
   var rankSel = document.getElementById('prizeRankSelect');
   var mode = candSel ? candSel.value : 'historical';
-  var rankBy = rankSel ? rankSel.value : 'total';
+  var rankBy = rankSel ? rankSel.value : 'weighted';
 
   var status = document.getElementById('prizeStatus');
 
@@ -2017,7 +2028,7 @@ function buildPrizeSimulation() {
         '<td>' + r.tiers[5] + '</td>' +
         '<td>' + r.tiers[6] + '</td>' +
         '<td>' + r.tiers[7] + '</td>' +
-        '<td>' + r.weighted + '</td>' +
+        '<td><strong>' + fmtNum(r.weighted) + '</strong></td>' +
         '<td>' + r.source + '</td>' +
         '</tr>';
     }).join('');
@@ -2089,7 +2100,7 @@ function buildPrizeSimulation() {
       'Each candidate is a fixed 6-number combination. It is compared to every historical draw under official HKJC rules (1st = 6 main; 2nd = 5 main + extra; …; 7th = 3 main). ' +
       '<strong>Historical</strong> candidates are the actual winning main sets from past draws (each gets at least one 1st prize on its own night). ' +
       '<strong>Random</strong> candidates are uniform samples from C(49,6). ' +
-      'Mean total hits in this run ≈ <strong>' + avgTotal.toFixed(1) + '</strong>; mean weighted score ≈ <strong>' + avgW.toFixed(1) + '</strong>. ' +
+      'Mean total hits in this run ≈ <strong>' + avgTotal.toFixed(1) + '</strong>; mean est. HKD value ≈ <strong>' + fmtNum(Math.round(avgW)) + '</strong>. ' +
       '“Never won” means zero hits in any of the seven divisions over the whole 49-ball era — uncommon for random tickets because 7th prize alone has odds on the order of 1 in ~600 per draw.';
   }
 
