@@ -613,6 +613,23 @@
         </div>
       </div>
 
+      <div class="card" style="margin-bottom:20px;border-color:var(--accent);">
+        <h3><span class="icon">🎫</span> Check your 6-number ticket against history</h3>
+        <p style="font-size:0.85rem;color:var(--muted);margin-bottom:10px;">
+          Enter six distinct numbers (1–49). Lists every past 49-ball draw where this ticket would have won any prize (1st–7th),
+          with estimated HKD (typical amounts). Total is the sum of those estimates.
+        </p>
+        <div class="filter-row" style="flex-wrap:wrap;gap:8px;align-items:center;">
+          <label>Your numbers:</label>
+          <input type="text" id="ticketInput" placeholder="e.g. 3, 12, 18, 27, 33, 41"
+            style="min-width:220px;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);">
+          <button class="btn" style="margin-top:0;padding:6px 14px;" onclick="checkUserTicket()">Check ticket</button>
+          <button class="btn" style="margin-top:0;padding:6px 14px;background:transparent;border:1px solid var(--border);color:var(--muted);"
+            onclick="document.getElementById('ticketInput').value='';document.getElementById('ticketResult').innerHTML='';">Clear</button>
+        </div>
+        <div id="ticketResult" style="margin-top:14px;"></div>
+      </div>
+
       <div class="filter-row" style="margin-bottom:16px;">
         <label>Candidate set:</label>
         <select id="prizeCandidateSelect">
@@ -1981,6 +1998,96 @@ function evaluateTicket(ticket, drawsList) {
   return { tiers: tiers, total: total, weighted: weighted, high: high };
 }
 
+
+var PRIZE_TIER_NAME = { 1: '1st', 2: '2nd', 3: '3rd', 4: '4th', 5: '5th', 6: '6th', 7: '7th' };
+
+function parseTicketInput(str) {
+  if (!str) return null;
+  var parts = String(str).split(/[\s,，、;+\/\|-]+/).map(function (x) {
+    return Number(String(x).trim());
+  }).filter(function (n) { return !isNaN(n) && n >= 1 && n <= 49; });
+  var seen = {}, nums = [];
+  parts.forEach(function (n) {
+    if (!seen[n]) { seen[n] = true; nums.push(n); }
+  });
+  nums.sort(function (a, b) { return a - b; });
+  if (nums.length !== 6) return null;
+  return nums;
+}
+
+function checkUserTicket() {
+  var box = document.getElementById('ticketResult');
+  if (!box) return;
+  if (!draws || !draws.length) {
+    box.innerHTML = '<div class="insight warn">Data not ready yet — wait for preloaded analysis to finish.</div>';
+    return;
+  }
+  var input = document.getElementById('ticketInput');
+  var ticket = parseTicketInput(input ? input.value : '');
+  if (!ticket) {
+    box.innerHTML = '<div class="insight warn">Enter exactly <strong>6 distinct numbers</strong> from 1–49 (e.g. <code>3, 12, 18, 27, 33, 41</code>).</div>';
+    return;
+  }
+
+  var rows = [];
+  var totalHKD = 0;
+  var tierCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 };
+  draws.forEach(function (d) {
+    var tier = scoreTicketAgainstDraw(ticket, d);
+    if (tier > 0) {
+      var amt = PRIZE_WEIGHT[tier] || 0;
+      totalHKD += amt;
+      tierCounts[tier]++;
+      rows.push({ draw: d, tier: tier, amount: amt });
+    }
+  });
+  rows.sort(function (a, b) { return b.draw.date - a.draw.date; });
+
+  var tierSummary = [1,2,3,4,5,6,7].map(function (x) {
+    return tierCounts[x] ? (PRIZE_TIER_NAME[x] + ': ' + tierCounts[x]) : null;
+  }).filter(Boolean).join(' · ');
+
+  var summary =
+    '<div class="insight info" style="margin-bottom:12px;">' +
+    '<strong>Ticket</strong> ' + ticket.map(function (n) { return ballHtml(n); }).join('') + '<br>' +
+    'Winning draws: <strong>' + rows.length + '</strong> / ' + fmtNum(draws.length) +
+    ' · Est. total prize: <strong>HK$ ' + fmtNum(totalHKD) + '</strong>' +
+    (tierSummary ? '<br><span style="font-size:0.85rem;color:var(--muted);">' + tierSummary + '</span>' : '') +
+    '</div>';
+
+  if (!rows.length) {
+    box.innerHTML = summary +
+      '<div class="insight">This combination never hit 3+ main numbers on any draw in the 49-ball history.</div>';
+    return;
+  }
+
+  var table =
+    '<div class="table-scroll" style="max-height:480px;"><table><thead><tr>' +
+    '<th>#</th><th>Date</th><th>Draw ID</th><th>Drawn numbers</th><th>Extra</th><th>Prize</th><th>Est. HKD</th>' +
+    '</tr></thead><tbody>' +
+    rows.map(function (r, i) {
+      var d = r.draw;
+      return '<tr>' +
+        '<td>' + (i + 1) + '</td>' +
+        '<td>' + fmtDate(d.date) + '</td>' +
+        '<td>' + (d.id || '—') + '</td>' +
+        '<td>' + d.balls.map(function (b) {
+          return ticket.indexOf(b) !== -1 ? ballHtml(b) : '<span class="num-ball" style="opacity:0.35;">' + b + '</span>';
+        }).join('') + '</td>' +
+        '<td>' + (d.extra != null ? ballHtml(d.extra, true) : '—') + '</td>' +
+        '<td><strong>' + PRIZE_TIER_NAME[r.tier] + '</strong></td>' +
+        '<td>HK$ ' + fmtNum(r.amount) + '</td>' +
+        '</tr>';
+    }).join('') +
+    '</tbody></table></div>' +
+    '<div style="margin-top:10px;text-align:right;font-size:1.05rem;"><strong>Total est. prize: HK$ ' +
+    fmtNum(totalHKD) + '</strong></div>' +
+    '<p style="font-size:0.78rem;color:var(--muted);margin-top:8px;">Matched main numbers are highlighted. ' +
+    'HKD uses typical amounts (1st–3rd averages; 4th–7th fixed). Actual pool prizes vary by draw.</p>';
+
+  box.innerHTML = summary + table;
+}
+
 function randomTicket() {
   var pool = [];
   for (var i = 1; i <= 49; i++) pool.push(i);
@@ -2045,6 +2152,125 @@ function renderExhaustivePrizeResults(data, rankBy) {
       'Top rows are the global maximum prize-hit / weighted-score tickets over the full space.';
   }
   if (charts.prizeHitDist) { try { charts.prizeHitDist.destroy(); } catch (e) {} }
+}
+
+
+function scoreSevenBank(bank7, drawsList) {
+  // bank7: sorted array of 7 numbers; score all C(7,6) tickets, ignore 1st prize
+  var tickets = [];
+  for (var leave = 0; leave < 7; leave++) {
+    var t6 = [];
+    for (var i = 0; i < 7; i++) if (i !== leave) t6.push(bank7[i]);
+    tickets.push(t6);
+  }
+  var totalWeighted = 0;
+  var totalHits = 0;
+  var tierAgg = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 };
+  var ticketDetails = tickets.map(function (tk) {
+    var ev = evaluateTicket(tk, drawsList, { ignoreFirst: true });
+    totalWeighted += ev.weighted;
+    totalHits += ev.total;
+    for (var t = 1; t <= 7; t++) tierAgg[t] += ev.tiers[t];
+    return { ticket: tk, total: ev.total, weighted: ev.weighted, tiers: ev.tiers };
+  });
+  return {
+    bank: bank7,
+    tickets: ticketDetails,
+    totalWeighted: totalWeighted,
+    totalHits: totalHits,
+    tiers: tierAgg
+  };
+}
+
+function buildSevenBankSuggestion() {
+  var box = document.getElementById('sevenBankResult');
+  if (!box) return;
+  if (!draws || !draws.length) {
+    box.innerHTML = '<div class="insight warn">Data not ready.</div>';
+    return;
+  }
+  box.innerHTML = '<div class="insight info">Searching pattern-based 7-number banks…</div>';
+
+  // Score numbers by appearance in frequent patterns (k=3,4) + raw frequency
+  var freq = Array(50).fill(0);
+  draws.forEach(function (d) { d.balls.forEach(function (b) { freq[b]++; }); });
+
+  var pairScore = Array(50).fill(0);
+  var tripScore = Array(50).fill(0);
+  draws.forEach(function (d) {
+    for (var i = 0; i < 6; i++) for (var j = i + 1; j < 6; j++) {
+      pairScore[d.balls[i]]++; pairScore[d.balls[j]]++;
+    }
+    combinations(d.balls, 3).forEach(function (c) {
+      c.forEach(function (n) { tripScore[n]++; });
+    });
+  });
+
+  // Composite rank: prefer numbers that sit in many historical pairs/triplets
+  var ranked = [];
+  for (var n = 1; n <= 49; n++) {
+    ranked.push({
+      n: n,
+      score: freq[n] * 1 + pairScore[n] * 0.15 + tripScore[n] * 0.05
+    });
+  }
+  ranked.sort(function (a, b) { return b.score - a.score; });
+
+  // Candidate pool: top 12 pattern-active numbers (C(12,7)=792 banks — fast in browser)
+  var pool = ranked.slice(0, 12).map(function (x) { return x.n; });
+
+  // Enumerate C(12,7) banks
+  var best = null;
+  var combs = combinations(pool, 7);
+  for (var i = 0; i < combs.length; i++) {
+    var bank = combs[i].slice().sort(function (a, b) { return a - b; });
+    var sc = scoreSevenBank(bank, draws);
+    if (!best || sc.totalWeighted > best.totalWeighted) best = sc;
+  }
+
+  // Also try pure hottest 7 as baseline
+  var hot7 = ranked.slice(0, 7).map(function (x) { return x.n; }).sort(function (a, b) { return a - b; });
+  var hotSc = scoreSevenBank(hot7, draws);
+  if (!best || hotSc.totalWeighted > best.totalWeighted) best = hotSc;
+
+  if (!best) {
+    box.innerHTML = '<div class="insight warn">Could not build a bank.</div>';
+    return;
+  }
+
+  var tierLine = [2, 3, 4, 5, 6, 7].map(function (t) {
+    return best.tiers[t] ? (PRIZE_TIER_NAME[t] + ': ' + best.tiers[t]) : null;
+  }).filter(Boolean).join(' · ');
+
+  var html =
+    '<div class="insight info">' +
+    '<strong>Suggested 7-number bank</strong><br>' +
+    best.bank.map(function (n) { return ballHtml(n); }).join('') +
+    '<br>Pool used: top pattern-active numbers from frequency / pairs / triplets. ' +
+    'Evaluated C(12,7) banks from top pattern-active numbers + hottest-7 baseline. <strong>1st prize excluded</strong> from totals.' +
+    '</div>' +
+    '<div class="insight" style="margin-top:8px;">' +
+    'All 7 tickets combined — hits (2nd–7th): <strong>' + best.totalHits + '</strong> · ' +
+    'Est. total HKD: <strong>' + fmtNum(best.totalWeighted) + '</strong>' +
+    (tierLine ? '<br>' + tierLine : '') +
+    (best.tiers[1] ? '<br><span style="color:var(--muted);font-size:0.85rem;">Note: ' + best.tiers[1] +
+      ' historical 1st-prize match(es) occurred but are excluded from the total.</span>' : '') +
+    '</div>' +
+    '<div class="table-scroll" style="max-height:360px;margin-top:12px;"><table><thead><tr>' +
+    '<th>#</th><th>6-number ticket (leave one out)</th><th>Hits</th><th>2nd</th><th>3rd</th><th>4th</th><th>5th</th><th>6th</th><th>7th</th><th>Est. HKD</th>' +
+    '</tr></thead><tbody>' +
+    best.tickets.slice().sort(function (a, b) { return b.weighted - a.weighted; }).map(function (tk, i) {
+      return '<tr><td>' + (i + 1) + '</td><td>' +
+        tk.ticket.map(function (n) { return ballHtml(n); }).join('') +
+        '</td><td>' + tk.total + '</td>' +
+        [2,3,4,5,6,7].map(function (t) { return '<td>' + tk.tiers[t] + '</td>'; }).join('') +
+        '<td><strong>' + fmtNum(tk.weighted) + '</strong></td></tr>';
+    }).join('') +
+    '</tbody></table></div>' +
+    '<p style="font-size:0.78rem;color:var(--muted);margin-top:8px;">' +
+    'This is a retrospective fit on historical patterns, not a forecast. Playing 7 tickets costs 7 units per draw; EV remains negative after duty.</p>';
+
+  box.innerHTML = html;
 }
 
 function buildPrizeSimulation() {
@@ -2141,22 +2367,26 @@ function buildPrizeSimulation() {
     }).join('');
   }
 
-  var never = results.filter(function (r) { return r.total === 0; });
-  var neverBody = document.querySelector('#neverTicketsTable tbody');
-  var neverStats = document.getElementById('neverWonStats');
-  if (neverStats) {
-    neverStats.innerHTML = 'Candidates scored: <strong>' + fmtNum(results.length) + '</strong> · ' +
-      'Never won any prize: <strong>' + fmtNum(never.length) + '</strong> (' +
-      (results.length ? (100 * never.length / results.length).toFixed(2) : '0') + '%)';
+  // Least est. prize value among candidates
+  var leastSorted = results.slice().sort(function (a, b) {
+    if (a.weighted !== b.weighted) return a.weighted - b.weighted;
+    return a.total - b.total;
+  });
+  var leastBody = document.querySelector('#leastPrizeTable tbody');
+  var leastStats = document.getElementById('leastPrizeStats');
+  if (leastStats) {
+    var minW = leastSorted.length ? leastSorted[0].weighted : 0;
+    var maxW = leastSorted.length ? leastSorted[leastSorted.length - 1].weighted : 0;
+    leastStats.innerHTML = 'Candidates: <strong>' + fmtNum(results.length) + '</strong> · ' +
+      'Min est. HKD: <strong>' + fmtNum(minW) + '</strong> · Max: <strong>' + fmtNum(maxW) + '</strong>';
   }
-  if (neverBody) {
-    neverBody.innerHTML = never.length
-      ? never.slice(0, 50).map(function (r, i) {
-          return '<tr><td>' + (i + 1) + '</td><td>' +
-            r.ticket.map(function (n) { return ballHtml(n); }).join('') +
-            '</td><td>' + r.source + '</td></tr>';
-        }).join('')
-      : '<tr><td colspan="3">None in this candidate set — every ticket hit at least one 3+ match over the full history.</td></tr>';
+  if (leastBody) {
+    leastBody.innerHTML = leastSorted.slice(0, 40).map(function (r, i) {
+      return '<tr><td>' + (i + 1) + '</td><td>' +
+        r.ticket.map(function (n) { return ballHtml(n); }).join('') +
+        '</td><td>' + r.total + '</td><td><strong>' + fmtNum(r.weighted) +
+        '</strong></td><td>' + r.source + '</td></tr>';
+    }).join('') || '<tr><td colspan="5">No candidates.</td></tr>';
   }
 
   // Distribution of total hits
@@ -2208,7 +2438,7 @@ function buildPrizeSimulation() {
       '<strong>Historical</strong> candidates are the actual winning main sets from past draws (each gets at least one 1st prize on its own night). ' +
       '<strong>Random</strong> candidates are uniform samples from C(49,6). ' +
       'Mean total hits in this run ≈ <strong>' + avgTotal.toFixed(1) + '</strong>; mean est. HKD value ≈ <strong>' + fmtNum(Math.round(avgW)) + '</strong>. ' +
-      '“Never won” means zero hits in any of the seven divisions over the whole 49-ball era — uncommon for random tickets because 7th prize alone has odds on the order of 1 in ~600 per draw.';
+      'The right-hand table lists candidate tickets with the lowest estimated HKD prize totals. Use the 7-number bank tool to explore pattern-based multiple entries (1st prize excluded from that total).';
   }
 
   if (status) {
@@ -2676,6 +2906,12 @@ document.addEventListener('DOMContentLoaded', function () {
   // Prefer embedded data on first paint
   if (typeof EMBEDDED_DRAWS !== 'undefined' && EMBEDDED_DRAWS.length) {
     loadEmbeddedDraws();
+  }
+  var ti = document.getElementById('ticketInput');
+  if (ti) {
+    ti.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); checkUserTicket(); }
+    });
   }
 });
 
