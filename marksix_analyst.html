@@ -541,7 +541,7 @@
       </div>
       <div class="card" style="margin-bottom:16px;">
         <h3><span class="">🏅</span> Top pattern per size (most prize opportunities historically)</h3>
-        <div id="topPatternOverview" class="grid grid-4" style="margin-top:8px;"></div>
+        <div id="topPatternOverview" style="margin-top:8px;display:flex;flex-direction:column;gap:12px;"></div>
       </div>
       <div class="filter-row" style="margin-bottom:16px;">
         <label>Pattern size (k):</label>
@@ -549,7 +549,7 @@
           <option value="3">3 numbers → 7th+ prize</option>
           <option value="4" selected>4 numbers → 5th+ prize</option>
           <option value="5">5 numbers → 3rd+ prize</option>
-          <option value="6">6 numbers → 1st prize</option>
+          <option value="6">6 numbers → 1st prize (only if any set repeated)</option>
         </select>
         <label style="margin-left:12px;">Min draws:</label>
         <select id="patternMinSelect">
@@ -1691,25 +1691,48 @@ function buildPatternFrequency() {
 
   var N = draws.length;
 
-  // Overview: top pattern for each k = 3..6
+  // Overview: all patterns tied for max frequency, per size k=3,4,5
+  // k=6 only if any exact 6-set appeared ≥2 times (otherwise every draw is unique & uninformative)
   var overview = document.getElementById('topPatternOverview');
   if (overview) {
-    overview.innerHTML = [3, 4, 5, 6].map(function (kk) {
+    var sizes = [3, 4, 5, 6];
+    overview.innerHTML = sizes.map(function (kk) {
       var counts = countPatternsForK(kk);
-      var best = null;
+      var maxC = 0;
       Object.keys(counts).forEach(function (key) {
-        if (!best || counts[key] > best.count) {
-          best = { nums: key.split('-').map(Number), count: counts[key] };
-        }
+        if (counts[key] > maxC) maxC = counts[key];
       });
-      if (!best) {
-        return '<div class="card kpi"><div class="label">k=' + kk + ' → ' + prizeTierLabel(kk) + '</div><div class="value">—</div></div>';
+      // Skip k=6 unless a set truly repeated
+      if (kk === 6 && maxC < 2) {
+        return '<div class="card">' +
+          '<div style="font-size:0.85rem;color:var(--muted);margin-bottom:6px;"><strong>k=6 → 1st prize</strong></div>' +
+          '<p style="font-size:0.85rem;color:var(--muted);margin:0;">No exact 6-number main set has repeated in this history (each jackpot combination is unique so far). Omitted from ranking.</p>' +
+          '</div>';
       }
-      return '<div class="card kpi">' +
-        '<div class="label">k=' + kk + ' → ' + prizeTierLabel(kk) + ' prize</div>' +
-        '<div style="margin:8px 0;">' + best.nums.map(function (n) { return ballHtml(n); }).join('') + '</div>' +
-        '<div class="value" style="font-size:1.35rem;">' + best.count + '</div>' +
-        '<div class="label">draws with this pattern</div></div>';
+      var tied = Object.keys(counts).filter(function (key) {
+        return counts[key] === maxC;
+      }).map(function (key) {
+        return { nums: key.split('-').map(Number), count: maxC, key: key };
+      }).sort(function (a, b) { return a.key.localeCompare(b.key); });
+
+      if (!tied.length) {
+        return '<div class="card"><div class="label">k=' + kk + ' → ' + prizeTierLabel(kk) + '</div><div>—</div></div>';
+      }
+      var listHtml = tied.map(function (p, i) {
+        return '<div style="margin:6px 0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
+          '<span style="font-size:0.75rem;color:var(--muted);min-width:1.5rem;">#' + (i + 1) + '</span>' +
+          p.nums.map(function (n) { return ballHtml(n); }).join('') +
+          '</div>';
+      }).join('');
+      return '<div class="card">' +
+        '<div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;">' +
+        '<div style="font-size:0.9rem;"><strong>k=' + kk + ' → ' + prizeTierLabel(kk) + ' prize</strong></div>' +
+        '<div><span style="font-size:1.25rem;font-weight:700;">' + maxC + '</span> ' +
+        '<span style="font-size:0.8rem;color:var(--muted);">draws each · ' + tied.length + ' pattern' + (tied.length > 1 ? 's' : '') + ' tied</span></div>' +
+        '</div>' +
+        '<p style="font-size:0.78rem;color:var(--muted);margin:6px 0 4px;">All patterns that share the maximum frequency:</p>' +
+        listHtml +
+        '</div>';
     }).join('');
   }
 
@@ -1793,31 +1816,39 @@ function buildPatternFrequency() {
     });
   }
 
-  // Example: show top pattern with draw count explanation
+  // Examples: all patterns tied for the maximum frequency at this k
   var ex = document.getElementById('patternExamples');
   if (ex && list.length) {
-    var topP = list[0];
-    // Find a few example draws containing this pattern
-    var examples = [];
-    for (var i = 0; i < draws.length && examples.length < 5; i++) {
-      var ok = topP.nums.every(function (n) { return draws[i].balls.indexOf(n) !== -1; });
-      if (ok) examples.push(draws[i]);
+    var maxC = list[0].count;
+    var tiedTop = list.filter(function (p) { return p.count === maxC; });
+    // For k=6 with only singles, note that clearly
+    if (k === 6 && maxC < 2) {
+      ex.innerHTML =
+        '<div class="insight info"><strong>k=6 (1st prize)</strong><br>' +
+        'Every historical main set is unique so far (max frequency = 1). There is no “most common” jackpot combination to highlight.</div>' +
+        '<div class="insight" style="margin-top:8px;"><strong>How to read this</strong><br>' +
+        'k=3 → 7th+, k=4 → 5th+, k=5 → 3rd+, k=6 → 1st. Ranked table lists patterns by how many draws contained them.</div>';
+    } else {
+      var rows = tiedTop.map(function (p, idx) {
+        return '<div style="margin:8px 0;">' +
+          '<span style="color:var(--muted);font-size:0.8rem;">#' + (idx + 1) + '</span> ' +
+          p.nums.map(function (n) { return ballHtml(n); }).join('') +
+          '</div>';
+      }).join('');
+      ex.innerHTML =
+        '<div class="insight info">' +
+        '<strong>Most prize-active pattern' + (tiedTop.length > 1 ? 's' : '') + ' (k=' + k + ')</strong> — ' +
+        '<strong>' + tiedTop.length + '</strong> pattern' + (tiedTop.length > 1 ? 's' : '') +
+        ' tied at <strong>' + maxC + '</strong> draws (' + (100 * maxC / N).toFixed(2) + '%). ' +
+        'Min prize tier: <strong>' + tier + '</strong>.' +
+        rows +
+        '</div>' +
+        '<div class="insight" style="margin-top:8px;">' +
+        '<strong>How to read this</strong><br>' +
+        'When several patterns share the same maximum frequency, all are listed (order is numeric, not preference). ' +
+        'Higher “Prize draws” means more past draws where holding that set would have contributed to a prize. ' +
+        'k=3 → 7th+, k=4 → 5th+, k=5 → 3rd+, k=6 → 1st (only shown if a full set repeated).</div>';
     }
-    ex.innerHTML =
-      '<div class="insight info">' +
-      '<strong>Most prize-active pattern (k=' + k + ')</strong> ' + topP.nums.map(function (n) { return ballHtml(n); }).join('') +
-      ' appeared in <strong>' + topP.count + '</strong> draws (' + (100 * topP.count / N).toFixed(2) + '%). ' +
-      'A ticket containing these numbers would have matched at least the <strong>' + tier + '</strong> prize on those draws.' +
-      (examples.length ? '<br>Example draws: ' + examples.map(function (d) {
-        return fmtDate(d.date) + ' [' + d.balls.map(function (b) { return b; }).join(', ') + ']';
-      }).join('; ') : '') +
-      '</div>' +
-      '<div class="insight" style="margin-top:8px;">' +
-      '<strong>How to read this</strong><br>' +
-      'Analysis uses only historical 49-ball draws (no full C(49,6) search). ' +
-      'Higher “Prize draws” means more past draws where holding this pattern would have contributed to a prize. ' +
-      'k=3 → 7th+, k=4 → 5th+, k=5 → 3rd+, k=6 → 1st. Lift compares to pure random expectation.' +
-      '</div>';
   } else if (ex) {
     ex.innerHTML = '';
   }
