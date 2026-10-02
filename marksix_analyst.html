@@ -665,21 +665,32 @@
           </div>
         </div>
         <div class="card">
-          <h3><span class="icon">❄️</span> Combinations that never won any prize</h3>
+          <h3><span class="icon">📉</span> Combinations with the least est. prize</h3>
           <p style="font-size:0.8rem;color:var(--muted);margin-bottom:8px;">
-            Tickets with <strong>zero</strong> hits in divisions 1–7 across the full 49-ball history (among the candidate set).
-            True “never” tickets are rare because 7th prize (3 main) is relatively common.
+            Among the candidate tickets, those with the <strong>lowest estimated HKD value</strong> across history
+            (typical prize weights; often many 7th-only or sparse hits).
           </p>
-          <div id="neverWonStats" style="font-size:0.85rem;color:var(--muted);margin-bottom:8px;"></div>
+          <div id="leastPrizeStats" style="font-size:0.85rem;color:var(--muted);margin-bottom:8px;"></div>
           <div class="table-scroll" style="max-height:480px;">
-            <table id="neverTicketsTable">
+            <table id="leastPrizeTable">
               <thead>
-                <tr><th>#</th><th>Ticket (6 numbers)</th><th>Source</th></tr>
+                <tr><th>#</th><th>Ticket</th><th>Hits</th><th>Est. HKD</th><th>Source</th></tr>
               </thead>
               <tbody></tbody>
             </table>
           </div>
         </div>
+      </div>
+
+      <div class="card" style="margin-top:20px;border-color:var(--accent);">
+        <h3><span class="icon">7️⃣</span> Suggested 7-number bank (7 × C(7,6) tickets)</h3>
+        <p style="font-size:0.85rem;color:var(--muted);margin-bottom:10px;">
+          Built from numbers that appear most often in high-frequency historical patterns.
+          All 7 six-number tickets from this bank are scored against past draws.
+          <strong>1st prize hits are ignored</strong> (treated as non-repeatable). Rank aims to maximise total est. HKD from 2nd–7th.
+        </p>
+        <button class="btn" style="margin-top:0;padding:6px 14px;" onclick="buildSevenBankSuggestion()">Build / refresh suggestion</button>
+        <div id="sevenBankResult" style="margin-top:14px;"></div>
       </div>
 
       <div class="card" style="margin-top:20px;">
@@ -2127,21 +2138,17 @@ function renderExhaustivePrizeResults(data, rankBy) {
         '<td><strong>' + fmtNum(r.weighted) + '</strong></td><td>Exhaustive</td></tr>';
     }).join('');
   }
-  var never = data.never_examples || [];
-  var neverBody = document.querySelector('#neverTicketsTable tbody');
-  var neverStats = document.getElementById('neverWonStats');
-  if (neverStats) {
-    neverStats.innerHTML = 'All <strong>' + fmtNum(data.combinations_scored) + '</strong> combinations scored. ' +
-      'Never won any prize: <strong>' + fmtNum(data.never_won_count) + '</strong> (' +
-      (data.never_won_pct != null ? data.never_won_pct.toFixed(4) : '0') + '%).';
+  var leastBody = document.querySelector('#leastPrizeTable tbody');
+  var leastStats = document.getElementById('leastPrizeStats');
+  if (leastStats) {
+    leastStats.innerHTML = 'Exhaustive mode: never-won count = <strong>' + fmtNum(data.never_won_count || 0) + '</strong> of ' +
+      fmtNum(data.combinations_scored || 0) + ' (precomputed offline if available).';
   }
-  if (neverBody) {
-    neverBody.innerHTML = never.length
-      ? never.slice(0, 50).map(function (t, i) {
-          return '<tr><td>' + (i + 1) + '</td><td>' + t.map(function (n) { return ballHtml(n); }).join('') +
-            '</td><td>Exhaustive</td></tr>';
-        }).join('')
-      : '<tr><td colspan="3">No ticket among all C(49,6) had zero prize hits over this history — every 6-set matched ≥3 main numbers on at least one draw.</td></tr>';
+  if (leastBody && data.never_examples && data.never_examples.length) {
+    leastBody.innerHTML = data.never_examples.slice(0, 40).map(function (tk, i) {
+      return '<tr><td>' + (i + 1) + '</td><td>' + tk.map(function (n) { return ballHtml(n); }).join('') +
+        '</td><td>0</td><td><strong>0</strong></td><td>Exhaustive</td></tr>';
+    }).join('');
   }
   var insight = document.getElementById('prizeInsight');
   if (insight) {
